@@ -31,3 +31,9 @@ pub fn test_single_key_xor() {
         "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736"
     );
 }
+
+#[test]
+pub fn test_freq_rank() {
+    assert_eq!("2e2e2e2e2e2e2e2e2e2e".freq_rank().unwrap().ceil() as u32, 0);
+    assert_eq!("65656565656565656565".freq_rank().unwrap().ceil() as u32, 127);
+}
