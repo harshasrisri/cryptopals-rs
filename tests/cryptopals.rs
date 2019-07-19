@@ -21,3 +21,13 @@ pub fn test_set1_chal2() {
         "746865206b696420646f6e277420706c6179"
     );
 }
+
+#[test]
+pub fn test_single_key_xor() {
+    assert_eq!(
+        hex::encode("Cooking MC's like a pound of bacon")
+            .single_key_xor('X')
+            .unwrap(),
+        "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736"
+    );
+}
