@@ -35,5 +35,8 @@ pub fn test_single_key_xor() {
 #[test]
 pub fn test_freq_rank() {
     assert_eq!("2e2e2e2e2e2e2e2e2e2e".freq_rank().unwrap().ceil() as u32, 0);
-    assert_eq!("65656565656565656565".freq_rank().unwrap().ceil() as u32, 127);
+    assert_eq!(
+        "65656565656565656565".freq_rank().unwrap().ceil() as u32,
+        127
+    );
 }

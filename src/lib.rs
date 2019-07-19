@@ -2,49 +2,55 @@ use base64;
 use hex;
 use std::collections::HashMap;
 
+const PRINTABLE_ASCII: [char; 94] = [
+    '!', '"', '#', '$', '%', '&', '\'', '(', ')', '*', '+', ',', '-', '.', '/', '0', '1', '2', '3',
+    '4', '5', '6', '7', '8', '9', ':', ';', '<', '=', '>', '?', '@', 'A', 'B', 'C', 'D', 'E', 'F',
+    'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y',
+    'Z', '[', '\\', ']', '^', '_', '`', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l',
+    'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '{', '|', '}', '~',
+];
+
 const ETAOIN_SHRDLU: [(u8, f32); 27] = [
-    (' ' as u8, 13.00),
-    ('e' as u8, 12.70),
-    ('t' as u8, 9.056),
-    ('a' as u8, 8.167),
-    ('o' as u8, 7.507),
-    ('i' as u8, 6.966),
-    ('n' as u8, 6.749),
-    ('s' as u8, 6.327),
-    ('h' as u8, 6.094),
-    ('r' as u8, 5.987),
-    ('d' as u8, 4.253),
-    ('l' as u8, 4.025),
-    ('u' as u8, 2.758),
-    ('b' as u8, 1.492),
-    ('c' as u8, 2.782),
-    ('f' as u8, 2.228),
-    ('g' as u8, 2.015),
-    ('j' as u8, 0.153),
-    ('k' as u8, 0.772),
-    ('m' as u8, 2.406),
-    ('p' as u8, 1.929),
-    ('q' as u8, 0.095),
-    ('v' as u8, 0.978),
-    ('w' as u8, 2.360),
-    ('x' as u8, 0.150),
-    ('y' as u8, 1.974),
-    ('z' as u8, 0.074),
+    (b' ', 13.00),
+    (b'e', 12.70),
+    (b't', 9.056),
+    (b'a', 8.167),
+    (b'o', 7.507),
+    (b'i', 6.966),
+    (b'n', 6.749),
+    (b's', 6.327),
+    (b'h', 6.094),
+    (b'r', 5.987),
+    (b'd', 4.253),
+    (b'l', 4.025),
+    (b'u', 2.758),
+    (b'b', 1.492),
+    (b'c', 2.782),
+    (b'f', 2.228),
+    (b'g', 2.015),
+    (b'j', 0.153),
+    (b'k', 0.772),
+    (b'm', 2.406),
+    (b'p', 1.929),
+    (b'q', 0.095),
+    (b'v', 0.978),
+    (b'w', 2.360),
+    (b'x', 0.150),
+    (b'y', 1.974),
+    (b'z', 0.074),
 ];
 
 pub trait XORCrypto {
     fn is_hex_encoded(self: Self) -> bool;
     fn fixed_xor(self: Self, rhs: Self) -> Result<String, hex::FromHexError>;
     fn single_key_xor(self: Self, key: char) -> Result<String, hex::FromHexError>;
+    fn guess_xor_key(self: Self) -> Result<char, hex::FromHexError>;
     fn freq_rank(self: Self) -> Result<f32, hex::FromHexError>;
 }
 
 impl XORCrypto for &str {
     fn is_hex_encoded(self: Self) -> bool {
-        match hex::decode(self) {
-            Ok(_) => true,
-            Err(_) => false,
-        }
+        hex::decode(self).is_ok()
     }
 
     fn fixed_xor(self, rhs: Self) -> Result<String, hex::FromHexError> {
@@ -68,6 +74,26 @@ impl XORCrypto for &str {
                 .map(|&x| (x ^ key as u8))
                 .collect::<Vec<u8>>(),
         ))
+    }
+
+    fn guess_xor_key(self) -> Result<char, hex::FromHexError> {
+        let mut guess = None;
+        let mut max_freq = 0.0;
+        for (i, freq) in PRINTABLE_ASCII
+            .iter()
+            .map(|&key| self.single_key_xor(key).unwrap())
+            .map(|payload| payload.freq_rank().unwrap())
+            .enumerate()
+        {
+            if freq > max_freq {
+                max_freq = freq;
+                guess = Some(i);
+            }
+        }
+        match guess {
+            Some(i) => Ok(PRINTABLE_ASCII[i]),
+            None => Err(hex::FromHexError::InvalidStringLength),
+        }
     }
 
     fn freq_rank(self) -> Result<f32, hex::FromHexError> {
