@@ -1,4 +1,6 @@
 use cryptopals::*;
+use std::fs::File;
+use std::io::{BufRead, BufReader};
 
 fn hex2b64() {
     let input =  "49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d";
@@ -35,8 +37,24 @@ fn single_byte_xor() {
     );
 }
 
+fn detect_single_char_xor() {
+    let input = File::open("inputs/s1c4.txt").unwrap();
+    let mut max_rank = 0.0;
+    let mut output = None;
+    for line in BufReader::new(input).lines().filter_map(|result| result.ok()) {
+        let line = line.hex_decode().unwrap();
+        let (guess, freq) = line.clone().guess_xor_key().unwrap();
+        if freq > max_rank {
+            max_rank = freq;
+            output = Some(String::from_utf8(line.single_key_xor(guess)).unwrap_or("".to_string()));
+        }
+    }
+    print!("Encrypted string in inputs/s1c4.txt with freq rank {} = {}", max_rank, output.unwrap());
+}
+
 fn main() {
     hex2b64();
     fixed_xor();
     single_byte_xor();
+    detect_single_char_xor();
 }
