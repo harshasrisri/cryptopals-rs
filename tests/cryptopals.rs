@@ -1,4 +1,3 @@
-use cryptopals;
 use cryptopals::*;
 
 type Result = std::result::Result<(), hex::FromHexError>;
