@@ -7,16 +7,18 @@ fn main() {
     println!(
         "Set 1 Challenge 2 - {}",
         "1c0111001f010100061a024b53535009181c"
-            .fixed_xor("686974207468652062756c6c277320657965")
+            .hex_decode()
             .unwrap()
+            .fixed_xor("686974207468652062756c6c277320657965".hex_decode().unwrap())
+            .unwrap()
+            .hex_encode()
     );
 
     let s1c3_input = "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736";
-    let s1c3_guess = s1c3_input.guess_xor_key().unwrap();
+    let s1c3_guess = s1c3_input.hex_decode().unwrap().guess_xor_key().unwrap();
     println!(
         "Set 1 Challenge 3 - {} - {}",
         s1c3_guess,
-        String::from_utf8(hex::decode(s1c3_input.single_key_xor(s1c3_guess).unwrap()).unwrap())
-            .unwrap()
+        String::from_utf8(s1c3_input.hex_decode().unwrap().single_key_xor(s1c3_guess)).unwrap()
     );
 }

@@ -38,34 +38,27 @@ impl Decoding for &str {
 }
 
 pub trait XORCrypto {
-    fn fixed_xor(self: Self, rhs: Self) -> Result<String>;
-    fn single_key_xor(self: Self, key: char) -> Result<String>;
+    fn fixed_xor(self: Self, rhs: Self) -> Result<Vec<u8>>;
+    fn single_key_xor(self: Self, key: char) -> Vec<u8>;
     fn guess_xor_key(self: Self) -> Result<char>;
-    fn freq_rank(self: Self) -> Result<f32>;
+    fn freq_rank(self: Self) -> f32;
 }
 
-impl XORCrypto for &str {
-    fn fixed_xor(self, rhs: Self) -> Result<String> {
+impl XORCrypto for Vec<u8> {
+    fn fixed_xor(self, rhs: Self) -> Result<Vec<u8>> {
         if self.len() != rhs.len() {
             return Err(hex::FromHexError::InvalidStringLength);
         }
 
-        Ok(hex::encode(
-            hex::decode(self)?
-                .iter()
-                .zip(hex::decode(rhs)?.iter())
-                .map(|(l, r)| l ^ r)
-                .collect::<Vec<u8>>(),
-        ))
+        Ok(self
+            .iter()
+            .zip(rhs.iter())
+            .map(|(l, r)| l ^ r)
+            .collect::<Vec<u8>>())
     }
 
-    fn single_key_xor(self, key: char) -> Result<String> {
-        Ok(hex::encode(
-            hex::decode(self)?
-                .iter()
-                .map(|&x| (x ^ key as u8))
-                .collect::<Vec<u8>>(),
-        ))
+    fn single_key_xor(self, key: char) -> Vec<u8> {
+        self.iter().map(|&x| (x ^ key as u8)).collect::<Vec<u8>>()
     }
 
     fn guess_xor_key(self) -> Result<char> {
@@ -73,8 +66,8 @@ impl XORCrypto for &str {
         let mut max_freq = 0.0;
         for (i, freq) in PRINTABLE_ASCII
             .iter()
-            .map(|&key| self.single_key_xor(key).unwrap())
-            .map(|payload| payload.freq_rank().unwrap())
+            .map(|&key| self.clone().single_key_xor(key))
+            .map(XORCrypto::freq_rank)
             .enumerate()
         {
             if freq > max_freq {
@@ -88,11 +81,8 @@ impl XORCrypto for &str {
         }
     }
 
-    fn freq_rank(self) -> Result<f32> {
+    fn freq_rank(self) -> f32 {
         let freq_map: HashMap<u8, f32> = ETAOIN_SHRDLU.iter().cloned().collect();
-        Ok(hex::decode(self)?
-            .iter()
-            .map(|x| freq_map.get(&x).unwrap_or(&0.0))
-            .sum())
+        self.iter().map(|x| freq_map.get(&x).unwrap_or(&0.0)).sum()
     }
 }
