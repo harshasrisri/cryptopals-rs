@@ -26,11 +26,12 @@ fn single_byte_xor() {
     print!("single_byte_xor({}) = ", input);
 
     let input = input.hex_decode().unwrap();
-    let guess = input.clone().guess_xor_key().unwrap();
+    let (guess, freq_rank) = input.clone().guess_xor_key().unwrap();
     println!(
-        "{} ({})",
+        "{} ({}) ({})",
         guess,
-        String::from_utf8(input.single_key_xor(guess)).unwrap()
+        String::from_utf8(input.single_key_xor(guess)).unwrap(),
+        freq_rank
     );
 }
 
