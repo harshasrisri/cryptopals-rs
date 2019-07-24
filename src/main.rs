@@ -8,7 +8,7 @@ fn hex2b64() {
     println!(
         "hex2b64({}) = {} ({})",
         input,
-        output.clone().b64_encode(),
+        output.b64_encode(),
         String::from_utf8(output).unwrap_or_else(|_| "** Not a valid UTF8 buffer **".to_string())
     );
 }
@@ -20,7 +20,7 @@ fn fixed_xor() {
 
     let input1 = input1.hex_decode().unwrap();
     let input2 = input2.hex_decode().unwrap();
-    println!("{}", input1.fixed_xor(input2).unwrap().hex_encode());
+    println!("{}", input1.fixed_xor(&input2).unwrap().hex_encode());
 }
 
 fn single_byte_xor() {
@@ -28,7 +28,7 @@ fn single_byte_xor() {
     print!("single_byte_xor({}) = ", input);
 
     let input = input.hex_decode().unwrap();
-    let (guess, freq_rank) = input.clone().guess_xor_key().unwrap();
+    let (guess, freq_rank) = input.guess_xor_key().unwrap();
     println!(
         "{} ({}) ({})",
         guess,
@@ -43,7 +43,7 @@ fn detect_single_char_xor() {
     let mut output = None;
     for line in BufReader::new(input).lines().filter_map(|result| result.ok()) {
         let line = line.hex_decode().unwrap();
-        let (guess, freq) = line.clone().guess_xor_key().unwrap();
+        let (guess, freq) = line.guess_xor_key().unwrap();
         if freq > max_rank {
             max_rank = freq;
             output = Some(String::from_utf8(line.single_key_xor(guess)).unwrap_or("".to_string()));
