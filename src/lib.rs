@@ -40,6 +40,7 @@ impl Decoding for &str {
 pub trait XORCrypto {
     fn fixed_xor(self: &Self, rhs: &Self) -> Result<Vec<u8>>;
     fn single_key_xor(self: &Self, key: char) -> Vec<u8>;
+    fn repeat_key_xor(self: &Self, key: &str) -> Vec<u8>;
     fn guess_xor_key(self: &Self) -> Result<(char, f32)>;
     fn freq_rank(self: &Self) -> f32;
 }
@@ -59,6 +60,13 @@ impl XORCrypto for Vec<u8> {
 
     fn single_key_xor(&self, key: char) -> Vec<u8> {
         self.iter().map(|&x| (x ^ key as u8)).collect::<Vec<u8>>()
+    }
+
+    fn repeat_key_xor(&self, key: &str) -> Vec<u8> {
+        self.iter()
+            .enumerate()
+            .map(|(i, c)| c ^ (key.as_bytes()[i % key.len()] as u8))
+            .collect::<Vec<u8>>()
     }
 
     fn guess_xor_key(&self) -> Result<(char, f32)> {
