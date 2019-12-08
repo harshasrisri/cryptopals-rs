@@ -49,7 +49,9 @@ fn detect_single_char_xor() {
         let (guess, freq) = line.guess_xor_key().unwrap();
         if freq > max_rank {
             max_rank = freq;
-            output = Some(String::from_utf8(line.single_key_xor(guess)).unwrap_or_else(|_| "".to_string()));
+            output = Some(
+                String::from_utf8(line.single_key_xor(guess)).unwrap_or_else(|_| "".to_string()),
+            );
         }
     }
     print!(
@@ -63,7 +65,31 @@ fn repeat_key_xor() {
     let input = "Burning 'em, if you ain't quick and nimble\nI go crazy when I hear a cymbal";
     let key = "ICE";
 
-    println!("-\n{}\n-\nAbove text repeatedly XOR'ed with the key {} is:\n{}", input, key, input.bytes().collect::<Vec<u8>>().repeat_key_xor("ICE").hex_encode());
+    println!(
+        "-\n{}\n-\nAbove text repeatedly XOR'ed with the key {} is:\n{}",
+        input,
+        key,
+        input
+            .bytes()
+            .collect::<Vec<u8>>()
+            .repeat_key_xor("ICE")
+            .hex_encode()
+    );
+}
+
+fn break_repeat_key_xor() {
+    let input = File::open("inputs/s1c6.txt").unwrap();
+    let vigenere_key = BufReader::new(input)
+        .lines()
+        .filter_map(std::result::Result::ok)
+        .collect::<Vec<String>>()
+        .join("")
+        .as_str()
+        .b64_decode()
+        .unwrap()
+        .guess_vigenere()
+        .unwrap();
+    println!("Vigenere Key: {}", String::from_utf8(vigenere_key).unwrap());
 }
 
 fn main() {
@@ -77,5 +103,7 @@ fn main() {
     detect_single_char_xor();
     println!("----");
     repeat_key_xor();
+    println!("----");
+    break_repeat_key_xor();
     println!("----");
 }

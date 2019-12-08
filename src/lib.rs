@@ -5,7 +5,9 @@ use std::collections::HashMap;
 mod constants;
 use constants::*;
 
-type Result<T> = std::result::Result<T, hex::FromHexError>;
+pub type Result<T> = std::result::Result<T, hex::FromHexError>;
+const NUM_CHUNKS: usize = 4;
+const CHUNK_COMBOS: usize = 6;
 
 pub trait Encoding {
     fn b64_encode(&self) -> String;
@@ -38,11 +40,29 @@ impl Decoding for &str {
 }
 
 pub trait XORCrypto {
-    fn fixed_xor(self: &Self, rhs: &Self) -> Result<Vec<u8>>;
-    fn single_key_xor(self: &Self, key: char) -> Vec<u8>;
-    fn repeat_key_xor(self: &Self, key: &str) -> Vec<u8>;
-    fn guess_xor_key(self: &Self) -> Result<(char, f32)>;
-    fn freq_rank(self: &Self) -> f32;
+    fn fixed_xor(&self, rhs: &Self) -> Result<Vec<u8>>;
+    fn count_ones(&self) -> u32;
+    fn hamming_distance(&self, rhs: &Self) -> Result<u32>;
+    fn single_key_xor(&self, key: char) -> Vec<u8>;
+    fn repeat_key_xor(&self, key: &str) -> Vec<u8>;
+    fn guess_xor_key(&self) -> Result<(char, f32)>;
+    fn matrixify(&self, cols: usize) -> Vec<Vec<u8>>;
+    fn guess_vigenere(&self) -> Result<Vec<u8>>;
+    fn freq_rank(&self) -> f32;
+}
+
+fn transpose(input: &[Vec<u8>]) -> Vec<Vec<u8>> {
+    let mut trans = Vec::new();
+
+    for i in 0..input[0].len() {
+        let mut col = Vec::new();
+        for row in input {
+            col.push(row[i]);
+        }
+        trans.push(col);
+    }
+
+    trans
 }
 
 impl XORCrypto for Vec<u8> {
@@ -56,6 +76,15 @@ impl XORCrypto for Vec<u8> {
             .zip(rhs.iter())
             .map(|(l, r)| l ^ r)
             .collect::<Vec<u8>>())
+    }
+
+    fn count_ones(&self) -> u32 {
+        self.iter().map(|b| b.count_ones()).sum()
+    }
+
+    fn hamming_distance(&self, rhs: &Self) -> Result<u32> {
+        let hamming_vector = self.fixed_xor(rhs)?;
+        Ok(hamming_vector.count_ones())
     }
 
     fn single_key_xor(&self, key: char) -> Vec<u8> {
@@ -87,6 +116,65 @@ impl XORCrypto for Vec<u8> {
             Some(i) => Ok((PRINTABLE_ASCII[i], max_freq)),
             None => Err(hex::FromHexError::InvalidStringLength),
         }
+    }
+
+    fn matrixify(&self, cols: usize) -> Vec<Vec<u8>> {
+        let mut result = self.chunks_exact(cols)
+            .map(|slice| slice.to_vec())
+            .collect::<Vec<_>>();
+        let last_align = result.len() * cols;
+        let pad_align = (result.len() + 1) * cols;
+        let mut last_chunk = Vec::new();
+
+        for i in last_align..self.len() {
+            last_chunk.push(self[i]);
+        }
+        for _ in self.len()..pad_align {
+            last_chunk.push(' ' as u8);
+        }
+
+        if last_chunk.len() == cols {
+            result.push(last_chunk);
+        }
+
+        result
+    }
+
+    fn guess_vigenere(&self) -> Result<Vec<u8>> {
+        let mut normalized_keysizes = (2..std::cmp::min(40, self.len() / NUM_CHUNKS))
+            .map(|n| {
+                let mut hamming_distance = 0;
+                let chunks = self.chunks_exact(n).take(NUM_CHUNKS).collect::<Vec<_>>();
+                for i in 0..NUM_CHUNKS {
+                    for j in i..NUM_CHUNKS {
+                        hamming_distance += chunks[i]
+                            .to_vec()
+                            .hamming_distance(&chunks[j].to_vec())
+                            .unwrap();
+                    }
+                }
+                (n, (hamming_distance as f32 / CHUNK_COMBOS as f32 / n as f32) as usize)
+            })
+        .collect::<Vec<_>>();
+
+        normalized_keysizes.sort_by(|a,b|(a.1).cmp(&b.1));
+
+        let mut guessed_keys = normalized_keysizes
+            .iter()
+            .take(4)
+            .map(|keysize| self.matrixify(keysize.0))
+            .map(|matrix| transpose(&matrix))
+            .map(|matrix| {
+                matrix
+                    .iter()
+                    .map(|row| row.guess_xor_key().unwrap().0 as u8)
+                    .collect::<Vec<u8>>()
+            })
+        .map(|key| (key.freq_rank(), key))
+            .collect::<Vec<_>>();
+
+        guessed_keys.sort_by(|a,b| (b.0).partial_cmp(&a.0).unwrap());
+        Ok(guessed_keys[0].1.iter().cloned().collect())
     }
 
     fn freq_rank(&self) -> f32 {
