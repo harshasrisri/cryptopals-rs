@@ -1,3 +1,4 @@
+use cryptopals::cryptobuf::*;
 use cryptopals::encodecode::*;
 use cryptopals::xorcrypt::*;
 use std::fs::File;
@@ -21,7 +22,7 @@ fn fixed_xor() {
 
     let input1 = input1.hex_decode().unwrap();
     let input2 = input2.hex_decode().unwrap();
-    println!("{}", input1.fixed_xor(&input2).unwrap().hex_encode());
+    println!("{}", input1.xor(&input2).unwrap().hex_encode());
 }
 
 fn single_byte_xor() {

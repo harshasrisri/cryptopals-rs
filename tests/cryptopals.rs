@@ -1,3 +1,4 @@
+use cryptopals::cryptobuf::*;
 use cryptopals::encodecode::*;
 use cryptopals::error::*;
 use cryptopals::xorcrypt::*;
@@ -16,7 +17,7 @@ pub fn test_fixed_xor() -> CryptopalResult<()> {
     assert_eq!(
         "1c0111001f010100061a024b53535009181c"
             .hex_decode()?
-            .fixed_xor(&"686974207468652062756c6c277320657965".hex_decode()?)?
+            .xor(&"686974207468652062756c6c277320657965".hex_decode()?)?
             .hex_encode(),
         "746865206b696420646f6e277420706c6179"
     );

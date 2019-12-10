@@ -1,41 +1,15 @@
 use crate::constants::*;
-use crate::error::{CryptopalError, CryptopalResult};
-use std::collections::HashMap;
+use crate::cryptobuf::*;
+use crate::error::*;
 
 pub trait XORCrypt {
-    fn fixed_xor(&self, rhs: &Self) -> CryptopalResult<Vec<u8>>;
-    fn count_ones(&self) -> u32;
-    fn hamming_distance(&self, rhs: &Self) -> CryptopalResult<u32>;
     fn single_key_xor(&self, key: char) -> Vec<u8>;
     fn repeat_key_xor(&self, key: &str) -> Vec<u8>;
     fn guess_xor_key(&self) -> CryptopalResult<(char, f32)>;
-    fn matrixify(&self, cols: usize) -> Vec<Vec<u8>>;
     fn guess_vigenere(&self) -> CryptopalResult<Vec<u8>>;
-    fn freq_rank(&self) -> f32;
 }
 
 impl XORCrypt for Vec<u8> {
-    fn fixed_xor(&self, rhs: &Self) -> CryptopalResult<Vec<u8>> {
-        if self.len() != rhs.len() {
-            return Err(CryptopalError::UnequalBufLength);
-        }
-
-        Ok(self
-            .iter()
-            .zip(rhs.iter())
-            .map(|(l, r)| l ^ r)
-            .collect::<Vec<u8>>())
-    }
-
-    fn count_ones(&self) -> u32 {
-        self.iter().map(|b| b.count_ones()).sum()
-    }
-
-    fn hamming_distance(&self, rhs: &Self) -> CryptopalResult<u32> {
-        let hamming_vector = self.fixed_xor(rhs)?;
-        Ok(hamming_vector.count_ones())
-    }
-
     fn single_key_xor(&self, key: char) -> Vec<u8> {
         self.iter().map(|&x| (x ^ key as u8)).collect::<Vec<u8>>()
     }
@@ -67,29 +41,6 @@ impl XORCrypt for Vec<u8> {
         }
     }
 
-    fn matrixify(&self, cols: usize) -> Vec<Vec<u8>> {
-        let mut result = self
-            .chunks_exact(cols)
-            .map(|slice| slice.to_vec())
-            .collect::<Vec<_>>();
-        let last_align = result.len() * cols;
-        let pad_align = (result.len() + 1) * cols;
-        let mut last_chunk = Vec::new();
-
-        for i in self.iter().skip(last_align) {
-            last_chunk.push(*i);
-        }
-        for _ in self.len()..pad_align {
-            last_chunk.push(b' ');
-        }
-
-        if last_chunk.len() == cols {
-            result.push(last_chunk);
-        }
-
-        result
-    }
-
     fn guess_vigenere(&self) -> CryptopalResult<Vec<u8>> {
         let mut normalized_keysizes = (2..std::cmp::min(40, self.len() / NUM_CHUNKS))
             .map(|n| {
@@ -115,7 +66,7 @@ impl XORCrypt for Vec<u8> {
         let mut guessed_keys = normalized_keysizes
             .iter()
             .take(4)
-            .map(|keysize| self.matrixify(keysize.0))
+            .map(|keysize| self.matrixify_padded(keysize.0))
             .map(|matrix| crate::transpose(&matrix))
             .map(|matrix| {
                 matrix
@@ -128,10 +79,5 @@ impl XORCrypt for Vec<u8> {
 
         guessed_keys.sort_by(|a, b| (b.0).partial_cmp(&a.0).unwrap());
         Ok(guessed_keys[0].1.to_vec())
-    }
-
-    fn freq_rank(&self) -> f32 {
-        let freq_map: HashMap<u8, f32> = ETAOIN_SHRDLU.iter().cloned().collect();
-        self.iter().map(|x| freq_map.get(&x).unwrap_or(&0.0)).sum()
     }
 }
