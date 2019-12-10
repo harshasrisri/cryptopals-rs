@@ -1,4 +1,5 @@
-use cryptopals::*;
+use cryptopals::xorcrypt::*;
+use cryptopals::encodecode::{Encoding,Decoding};
 
 type Result = std::result::Result<(), hex::FromHexError>;
 

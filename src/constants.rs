@@ -35,3 +35,6 @@ pub const ETAOIN_SHRDLU: [(u8, f32); 27] = [
     (b'y', 1.974),
     (b'z', 0.074),
 ];
+
+pub const NUM_CHUNKS: usize = 4;
+pub const CHUNK_COMBOS: usize = 6;
