@@ -42,12 +42,13 @@ impl XORCrypt for Vec<u8> {
     }
 
     fn guess_vigenere(&self) -> CryptopalResult<Vec<u8>> {
-        let mut normalized_keysizes = (2..std::cmp::min(40, self.len() / NUM_CHUNKS))
+        let chunk_combinations = NUM_CHUNKS_VIGENERE * (NUM_CHUNKS_VIGENERE - 1) / 2;
+        let mut normalized_keysizes = (2..std::cmp::min(40, self.len() / NUM_CHUNKS_VIGENERE))
             .map(|n| {
                 let mut hamming_distance = 0;
-                let chunks = self.chunks_exact(n).take(NUM_CHUNKS).collect::<Vec<_>>();
-                for i in 0..NUM_CHUNKS {
-                    for j in i..NUM_CHUNKS {
+                let chunks = self.chunks_exact(n).take(NUM_CHUNKS_VIGENERE).collect::<Vec<_>>();
+                for i in 0..NUM_CHUNKS_VIGENERE {
+                    for j in i..NUM_CHUNKS_VIGENERE {
                         hamming_distance += chunks[i]
                             .to_vec()
                             .hamming_distance(&chunks[j].to_vec())
@@ -56,7 +57,7 @@ impl XORCrypt for Vec<u8> {
                 }
                 (
                     n,
-                    (hamming_distance as f32 / CHUNK_COMBOS as f32 / n as f32) as usize,
+                    (hamming_distance as f32 / chunk_combinations as f32 / n as f32) as usize,
                 )
             })
             .collect::<Vec<_>>();
@@ -66,7 +67,7 @@ impl XORCrypt for Vec<u8> {
         let mut guessed_keys = normalized_keysizes
             .iter()
             .take(4)
-            .map(|keysize| self.matrixify_padded(keysize.0))
+            .map(|keysize| self.matrixify(keysize.0))
             .map(|matrix| crate::transpose(&matrix))
             .map(|matrix| {
                 matrix

@@ -81,17 +81,17 @@ fn repeat_key_xor() {
 
 fn break_repeat_key_xor() {
     let input = File::open("inputs/s1c6.txt").unwrap();
-    let vigenere_key = BufReader::new(input)
+    let input = BufReader::new(input)
         .lines()
         .filter_map(std::result::Result::ok)
         .collect::<Vec<String>>()
         .join("")
         .as_str()
         .b64_decode()
-        .unwrap()
-        .guess_vigenere()
         .unwrap();
-    println!("Vigenere Key: {}", String::from_utf8(vigenere_key).unwrap());
+    let guessed_key = String::from_utf8(input.guess_vigenere().unwrap()).unwrap();
+    println!("Vigenere Key: {}", guessed_key);
+    println!("Plain text: {}", String::from_utf8(input.repeat_key_xor(guessed_key.as_str())).unwrap());
 }
 
 fn main() {
