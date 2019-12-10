@@ -1,10 +1,9 @@
+use cryptopals::encodecode::*;
+use cryptopals::error::*;
 use cryptopals::xorcrypt::*;
-use cryptopals::encodecode::{Encoding,Decoding};
-
-type Result = std::result::Result<(), hex::FromHexError>;
 
 #[test]
-pub fn test_hex2base64() -> Result {
+pub fn test_hex2base64() -> CryptopalResult<()> {
     assert_eq!(
         "49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d".hex_decode()?.b64_encode(),
         "SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t"
@@ -13,7 +12,7 @@ pub fn test_hex2base64() -> Result {
 }
 
 #[test]
-pub fn test_fixed_xor() -> Result {
+pub fn test_fixed_xor() -> CryptopalResult<()> {
     assert_eq!(
         "1c0111001f010100061a024b53535009181c"
             .hex_decode()?
@@ -25,7 +24,7 @@ pub fn test_fixed_xor() -> Result {
 }
 
 #[test]
-pub fn test_single_key_xor() -> Result {
+pub fn test_single_key_xor() -> CryptopalResult<()> {
     assert_eq!(
         "Cooking MC's like a pound of bacon"
             .bytes()
@@ -38,7 +37,7 @@ pub fn test_single_key_xor() -> Result {
 }
 
 #[test]
-pub fn test_freq_rank() -> Result {
+pub fn test_freq_rank() -> CryptopalResult<()> {
     assert_eq!(
         "2e2e2e2e2e2e2e2e2e2e".hex_decode()?.freq_rank().ceil() as u32,
         0
@@ -51,7 +50,7 @@ pub fn test_freq_rank() -> Result {
 }
 
 #[test]
-pub fn test_repeat_key_xor() -> Result {
+pub fn test_repeat_key_xor() -> CryptopalResult<()> {
     assert_eq!(
         "Burning 'em, if you ain't quick and nimble\nI go crazy when I hear a cymbal".bytes().collect::<Vec<u8>>().repeat_key_xor("ICE").hex_encode(),
         "0b3637272a2b2e63622c2e69692a23693a2a3c6324202d623d63343c2a26226324272765272a282b2f20430a652e2c652a3124333a653e2b2027630c692b20283165286326302e27282f");
@@ -59,9 +58,9 @@ pub fn test_repeat_key_xor() -> Result {
 }
 
 #[test]
-pub fn test_hamming_distance() -> Result {
+pub fn test_hamming_distance() -> CryptopalResult<()> {
     let str1 = "this is a test".as_bytes().to_vec();
     let str2 = "wokka wokka!!!".as_bytes().to_vec();
-    assert_eq!( str1.hamming_distance(&str2).unwrap(), 37);
+    assert_eq!(str1.hamming_distance(&str2).unwrap(), 37);
     Ok(())
 }

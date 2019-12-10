@@ -1,8 +1,7 @@
 pub mod constants;
 pub mod encodecode;
+pub mod error;
 pub mod xorcrypt;
-
-pub type Result<T> = std::result::Result<T, hex::FromHexError>;
 
 fn transpose(input: &[Vec<u8>]) -> Vec<Vec<u8>> {
     let mut trans = Vec::new();
