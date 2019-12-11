@@ -46,7 +46,10 @@ impl XORCrypt for Vec<u8> {
         let mut normalized_keysizes = (2..std::cmp::min(40, self.len() / NUM_CHUNKS_VIGENERE))
             .map(|n| {
                 let mut hamming_distance = 0;
-                let chunks = self.chunks_exact(n).take(NUM_CHUNKS_VIGENERE).collect::<Vec<_>>();
+                let chunks = self
+                    .chunks_exact(n)
+                    .take(NUM_CHUNKS_VIGENERE)
+                    .collect::<Vec<_>>();
                 for i in 0..NUM_CHUNKS_VIGENERE {
                     for j in i..NUM_CHUNKS_VIGENERE {
                         hamming_distance += chunks[i]

@@ -2,6 +2,8 @@ use cryptopals::cryptobuf::*;
 use cryptopals::encodecode::*;
 use cryptopals::error::*;
 use cryptopals::xorcrypt::*;
+use std::fs::File;
+use std::io::{BufRead, BufReader};
 
 #[test]
 pub fn test_hex2base64() -> CryptopalResult<()> {
@@ -63,5 +65,22 @@ pub fn test_hamming_distance() -> CryptopalResult<()> {
     let str1 = "this is a test".as_bytes().to_vec();
     let str2 = "wokka wokka!!!".as_bytes().to_vec();
     assert_eq!(str1.hamming_distance(&str2).unwrap(), 37);
+    Ok(())
+}
+
+#[test]
+pub fn test_vigenere() -> CryptopalResult<()> {
+    let input = File::open("inputs/s1c6.txt").unwrap();
+    let cipherblob = BufReader::new(input)
+        .lines()
+        .filter_map(std::result::Result::ok)
+        .collect::<Vec<String>>()
+        .join("")
+        .as_str()
+        .b64_decode()?;
+    let guessed_key = String::from_utf8(cipherblob.guess_vigenere()?).unwrap();
+    let plainblob = cipherblob.repeat_key_xor(guessed_key.as_str());
+    let reconstructed = plainblob.repeat_key_xor(guessed_key.as_str());
+    assert_eq!(cipherblob, reconstructed);
     Ok(())
 }

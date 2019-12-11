@@ -91,7 +91,10 @@ fn break_repeat_key_xor() {
         .unwrap();
     let guessed_key = String::from_utf8(input.guess_vigenere().unwrap()).unwrap();
     println!("Vigenere Key: {}", guessed_key);
-    println!("Plain text: {}", String::from_utf8(input.repeat_key_xor(guessed_key.as_str())).unwrap());
+    println!(
+        "Plain text: {}",
+        String::from_utf8(input.repeat_key_xor(guessed_key.as_str())).unwrap()
+    );
 }
 
 fn main() {
