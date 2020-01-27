@@ -2,6 +2,7 @@ use cryptopals::cryptobuf::*;
 use cryptopals::encodecode::*;
 use cryptopals::xorcrypt::*;
 use cryptopals::constants::CARGO_HOME;
+use crate::CryptopalArgs;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
@@ -104,8 +105,10 @@ pub fn break_repeat_key_xor() {
     );
 }
 
-pub fn run(challenge: usize) {
+pub fn run(args: &CryptopalArgs) {
     let mut executed = 0;
+    let challenge = args.challenge;
+
     if challenge == 0 || challenge == 1 {
         println!("----");
         hex2b64();
