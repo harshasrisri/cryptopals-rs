@@ -5,6 +5,7 @@ use cryptopals::constants::CARGO_HOME;
 use crate::CryptopalArgs;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
+use openssl::symm::{decrypt, Cipher};
 
 pub fn hex2b64() {
     let input =  "49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d";
@@ -105,6 +106,25 @@ pub fn break_repeat_key_xor() {
     );
 }
 
+pub fn aes_decrypt() {
+    let mut input = CARGO_HOME.to_owned();
+    input.push_str("/inputs/s1c7.txt");
+    let input = File::open(input).unwrap();
+    let input = BufReader::new(input)
+        .lines()
+        .filter_map(std::result::Result::ok)
+        .collect::<Vec<String>>()
+        .join("")
+        .as_str()
+        .b64_decode()
+        .unwrap();
+    let ciphertext = input.as_slice();
+    let key = "YELLOW SUBMARINE".as_bytes();
+    let cipher = Cipher::aes_128_ecb();
+    let plaintext = decrypt(cipher, key, None, ciphertext).unwrap();
+    println!("Plain text: {}", String::from_utf8(plaintext).unwrap());
+}
+
 pub fn run(args: &CryptopalArgs) {
     let mut executed = 0;
     let challenge = args.challenge;
@@ -137,6 +157,11 @@ pub fn run(args: &CryptopalArgs) {
     if challenge == 0 || challenge == 6 {
         println!("----");
         break_repeat_key_xor();
+        executed += 1;
+    }
+    if challenge == 0 || challenge == 7 {
+        println!("----");
+        aes_decrypt();
         executed += 1;
     }
     if executed == 0 {
