@@ -49,7 +49,7 @@ pub fn single_byte_xor() -> Result<()> {
 pub fn detect_single_char_xor() -> Result<()> {
     let mut input = CARGO_HOME.to_owned();
     input.push_str("/inputs/s1c4.txt");
-    println!("{}", input);
+    println!("input file: {}", input);
     let input = File::open(input)?;
     let mut max_rank = 0.0;
     let mut output = None;
@@ -61,9 +61,12 @@ pub fn detect_single_char_xor() -> Result<()> {
         let (guess, freq) = line.guess_xor_key()?;
         if freq > max_rank {
             max_rank = freq;
-            output = Some(String::from_utf8(line.single_key_xor(guess))?);
+            if let Ok(s) = String::from_utf8(line.single_key_xor(guess)) {
+                output = Some(s);
+            }
         }
     }
+
     print!(
         "Encrypted string in inputs/s1c4.txt with freq rank {} = {}",
         max_rank,
