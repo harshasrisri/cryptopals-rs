@@ -1,4 +1,4 @@
-use crate::error::{CryptopalError, CryptopalResult};
+use anyhow::Result;
 use base64;
 use hex;
 
@@ -18,16 +18,16 @@ impl<T: ?Sized + AsRef<[u8]>> Encoding for T {
 }
 
 pub trait Decoding {
-    fn b64_decode(&self) -> CryptopalResult<Vec<u8>>;
-    fn hex_decode(&self) -> CryptopalResult<Vec<u8>>;
+    fn b64_decode(&self) -> Result<Vec<u8>>;
+    fn hex_decode(&self) -> Result<Vec<u8>>;
 }
 
 impl<T: ?Sized + AsRef<[u8]>> Decoding for T {
-    fn b64_decode(&self) -> CryptopalResult<Vec<u8>> {
-        base64::decode(self).map_err(CryptopalError::from)
+    fn b64_decode(&self) -> Result<Vec<u8>> {
+        Ok(base64::decode(self)?)
     }
 
-    fn hex_decode(&self) -> CryptopalResult<Vec<u8>> {
-        hex::decode(self).map_err(CryptopalError::from)
+    fn hex_decode(&self) -> Result<Vec<u8>> {
+        Ok(hex::decode(self)?)
     }
 }

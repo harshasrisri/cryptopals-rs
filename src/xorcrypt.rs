@@ -1,12 +1,12 @@
 use crate::constants::*;
 use crate::cryptobuf::*;
-use crate::error::*;
+use anyhow::Result;
 
 pub trait XORCrypt {
     fn single_key_xor(&self, key: char) -> Vec<u8>;
     fn repeat_key_xor(&self, key: &str) -> Vec<u8>;
-    fn guess_xor_key(&self) -> CryptopalResult<(char, f32)>;
-    fn guess_vigenere(&self) -> CryptopalResult<Vec<u8>>;
+    fn guess_xor_key(&self) -> Result<(char, f32)>;
+    fn guess_vigenere(&self) -> Result<Vec<u8>>;
 }
 
 impl XORCrypt for Vec<u8> {
@@ -21,7 +21,7 @@ impl XORCrypt for Vec<u8> {
             .collect::<Vec<u8>>()
     }
 
-    fn guess_xor_key(&self) -> CryptopalResult<(char, f32)> {
+    fn guess_xor_key(&self) -> Result<(char, f32)> {
         let mut guess = None;
         let mut max_freq = 0.0;
         for (i, freq) in PRINTABLE_ASCII
@@ -35,13 +35,12 @@ impl XORCrypt for Vec<u8> {
                 guess = Some(i);
             }
         }
-        match guess {
-            Some(i) => Ok((PRINTABLE_ASCII[i], max_freq)),
-            None => Err(CryptopalError::CantGuessXorKey),
-        }
+        guess
+            .map(|i| (PRINTABLE_ASCII[i], max_freq))
+            .ok_or(anyhow::anyhow!("Can't guess XOR key for message"))
     }
 
-    fn guess_vigenere(&self) -> CryptopalResult<Vec<u8>> {
+    fn guess_vigenere(&self) -> Result<Vec<u8>> {
         let chunk_combinations = NUM_CHUNKS_VIGENERE * (NUM_CHUNKS_VIGENERE - 1) / 2;
         let mut normalized_keysizes = (2..std::cmp::min(40, self.len() / NUM_CHUNKS_VIGENERE))
             .map(|n| {

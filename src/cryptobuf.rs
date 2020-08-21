@@ -1,17 +1,17 @@
 use crate::constants::ETAOIN_SHRDLU;
-use crate::error::*;
+use anyhow::Result;
 use std::collections::HashMap;
 
-pub trait XORBuf {
+pub trait XORCrypto {
     fn count_ones(&self) -> u32;
     fn freq_rank(&self) -> f32;
-    fn xor(&self, rhs: &Self) -> CryptopalResult<Vec<u8>>;
-    fn hamming_distance(&self, rhs: &Self) -> CryptopalResult<u32>;
+    fn xor(&self, rhs: &Self) -> Result<Vec<u8>>;
+    fn hamming_distance(&self, rhs: &Self) -> Result<u32>;
     fn matrixify(&self, cols: usize) -> Vec<Vec<u8>>;
     fn matrixify_padded(&self, cols: usize) -> Vec<Vec<u8>>;
 }
 
-impl XORBuf for Vec<u8> {
+impl XORCrypto for Vec<u8> {
     fn count_ones(&self) -> u32 {
         self.iter().map(|b| b.count_ones()).sum()
     }
@@ -21,17 +21,13 @@ impl XORBuf for Vec<u8> {
         self.iter().map(|x| freq_map.get(&x).unwrap_or(&0.0)).sum()
     }
 
-    fn xor(&self, rhs: &Self) -> CryptopalResult<Self> {
-        if self.len() != rhs.len() {
-            return Err(CryptopalError::UnequalBufLength);
-        }
-
+    fn xor(&self, rhs: &Self) -> Result<Self> {
+        anyhow::ensure!(self.len() == rhs.len(), "Input buffers differ in lengths");
         Ok(self.iter().zip(rhs.iter()).map(|(l, r)| l ^ r).collect())
     }
 
-    fn hamming_distance(&self, rhs: &Self) -> CryptopalResult<u32> {
-        let hamming_vector = self.xor(rhs)?;
-        Ok(hamming_vector.count_ones())
+    fn hamming_distance(&self, rhs: &Self) -> Result<u32> {
+        Ok(self.xor(rhs)?.count_ones())
     }
 
     fn matrixify(&self, cols: usize) -> Vec<Vec<u8>> {
@@ -42,24 +38,20 @@ impl XORBuf for Vec<u8> {
 
     fn matrixify_padded(&self, cols: usize) -> Vec<Vec<u8>> {
         let mut result = self.matrixify(cols);
-        let excess = self.len() % cols;
 
-        if excess == 0 {
+        if self.len() % cols == 0 {
             return result;
         }
 
-        let padding = ((self.len() / cols) + 1) * cols - self.len();
-        let mut last_chunk = Vec::new();
+        let last_padded_chunk = self
+            .iter()
+            .skip(result.len() * cols)
+            .copied()
+            .chain(std::iter::repeat(b' '))
+            .take(cols)
+            .collect();
 
-        for i in self.iter().skip(self.len() - excess) {
-            last_chunk.push(*i);
-        }
-
-        for _ in 0..padding {
-            last_chunk.push(b' ');
-        }
-
-        result.push(last_chunk);
+        result.push(last_padded_chunk);
         result
     }
 }

@@ -1,15 +1,17 @@
+use anyhow::Result;
 use std::path::PathBuf;
 use structopt::StructOpt;
+
 mod set1;
 
 #[derive(StructOpt, Debug)]
 pub struct CryptopalArgs {
     /// Specify the set number. Default solves all of them.
-    #[structopt(short = "s", long = "set", default_value = "0")]
+    #[structopt(short = "s", long = "set")]
     pub set: usize,
 
     /// Specify the challenge number. Default solves all of them.
-    #[structopt(short = "c", long = "challenge", default_value = "0")]
+    #[structopt(short = "c", long = "challenge")]
     pub challenge: usize,
 
     /// Input file for the challenge specified.
@@ -17,16 +19,13 @@ pub struct CryptopalArgs {
     pub inputfile: Option<PathBuf>,
 }
 
-fn main() {
+fn main() -> Result<()> {
     let args = CryptopalArgs::from_args();
-    let mut executed = 0;
 
-    if args.set == 0 || args.set == 1 {
-        set1::run(&args);
-        executed += 1;
-    }
+    match args.set {
+        1 => set1::run(&args)?,
+        _ => anyhow::bail!("Set {} doesn't exist", args.set),
+    };
 
-    if executed == 0 {
-        println!("Set {} doesn't exist", args.set);
-    }
+    Ok(())
 }
