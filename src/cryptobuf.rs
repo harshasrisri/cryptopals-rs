@@ -1,6 +1,5 @@
 use crate::constants::ETAOIN_SHRDLU;
 use anyhow::Result;
-use std::collections::HashMap;
 
 pub trait XORCrypto {
     fn count_ones(&self) -> u32;
@@ -17,8 +16,9 @@ impl XORCrypto for Vec<u8> {
     }
 
     fn freq_rank(&self) -> f32 {
-        let freq_map: HashMap<u8, f32> = ETAOIN_SHRDLU.iter().cloned().collect();
-        self.iter().map(|x| freq_map.get(&x).unwrap_or(&0.0)).sum()
+        self.iter()
+            .map(|x| ETAOIN_SHRDLU.get(&x).unwrap_or(&0.0))
+            .sum()
     }
 
     fn xor(&self, rhs: &Self) -> Result<Self> {

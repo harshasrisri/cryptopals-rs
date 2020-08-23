@@ -1,6 +1,6 @@
+use anyhow::Result;
 use cryptopals::cryptobuf::*;
 use cryptopals::encodecode::*;
-use anyhow::Result;
 use cryptopals::xorcrypt::*;
 use std::fs::File;
 use std::io::{BufRead, BufReader};

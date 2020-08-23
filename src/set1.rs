@@ -5,10 +5,11 @@ use cryptopals::cryptobuf::*;
 use cryptopals::encodecode::*;
 use cryptopals::xorcrypt::*;
 use openssl::symm::{decrypt, Cipher};
+use std::collections::HashSet;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
-pub fn hex2b64() -> Result<()> {
+fn hex2b64() -> Result<()> {
     let input =  "49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d";
     let output = input.hex_decode()?;
     println!(
@@ -20,7 +21,7 @@ pub fn hex2b64() -> Result<()> {
     Ok(())
 }
 
-pub fn fixed_xor() -> Result<()> {
+fn fixed_xor() -> Result<()> {
     let input1 = "1c0111001f010100061a024b53535009181c";
     let input2 = "686974207468652062756c6c277320657965";
     print!("fixed_xor({}, {}) = ", input1, input2);
@@ -31,7 +32,7 @@ pub fn fixed_xor() -> Result<()> {
     Ok(())
 }
 
-pub fn single_byte_xor() -> Result<()> {
+fn single_byte_xor() -> Result<()> {
     let input = "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736";
     print!("single_byte_xor({}) = ", input);
 
@@ -46,7 +47,7 @@ pub fn single_byte_xor() -> Result<()> {
     Ok(())
 }
 
-pub fn detect_single_char_xor() -> Result<()> {
+fn detect_single_char_xor() -> Result<()> {
     let mut input = CARGO_HOME.to_owned();
     input.push_str("/inputs/s1c4.txt");
     println!("input file: {}", input);
@@ -75,7 +76,7 @@ pub fn detect_single_char_xor() -> Result<()> {
     Ok(())
 }
 
-pub fn repeat_key_xor() {
+fn repeat_key_xor() {
     let input = "Burning 'em, if you ain't quick and nimble\nI go crazy when I hear a cymbal";
     let key = "ICE";
 
@@ -91,7 +92,7 @@ pub fn repeat_key_xor() {
     );
 }
 
-pub fn break_repeat_key_xor() -> Result<()> {
+fn break_repeat_key_xor() -> Result<()> {
     let mut input = CARGO_HOME.to_owned();
     input.push_str("/inputs/s1c6.txt");
     println!("{}", input);
@@ -112,7 +113,7 @@ pub fn break_repeat_key_xor() -> Result<()> {
     Ok(())
 }
 
-pub fn aes_decrypt() -> Result<()> {
+fn aes_decrypt() -> Result<()> {
     let mut input = CARGO_HOME.to_owned();
     input.push_str("/inputs/s1c7.txt");
     let input = File::open(input)?;
@@ -124,10 +125,29 @@ pub fn aes_decrypt() -> Result<()> {
         .as_str()
         .b64_decode()?;
     let ciphertext = input.as_slice();
-    let key = "YELLOW SUBMARINE".as_bytes();
+    let key = b"YELLOW SUBMARINE";
     let cipher = Cipher::aes_128_ecb();
     let plaintext = decrypt(cipher, key, None, ciphertext)?;
     println!("Plain text: {}", String::from_utf8(plaintext)?);
+    Ok(())
+}
+
+fn detect_aes_ecb() -> Result<()> {
+    let mut input = CARGO_HOME.to_owned();
+    input.push_str("/inputs/s1c8.txt");
+    println!("input file: {}", input);
+    let input = File::open(input)?;
+    for (i, line) in BufReader::new(input)
+        .lines()
+        .filter_map(|line| line.ok())
+        .enumerate()
+    {
+        let line = line.hex_decode()?;
+        let chunks = line.chunks(16);
+        if line.len() / 16 != chunks.collect::<HashSet<_>>().len() {
+            println!("ECB detected on line number {}", i);
+        }
+    }
     Ok(())
 }
 
@@ -140,6 +160,7 @@ pub fn run(args: &CryptopalArgs) -> Result<()> {
         5 => repeat_key_xor(),
         6 => break_repeat_key_xor()?,
         7 => aes_decrypt()?,
+        8 => detect_aes_ecb()?,
         _ => anyhow::bail!(
             "Challenge {} doesn't exist in set {}",
             args.challenge,

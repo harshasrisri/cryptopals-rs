@@ -3,6 +3,9 @@ pub mod cryptobuf;
 pub mod encodecode;
 pub mod xorcrypt;
 
+#[macro_use]
+extern crate lazy_static;
+
 fn transpose<T>(input: &[Vec<T>]) -> Vec<Vec<T>>
 where
     T: Clone,
