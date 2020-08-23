@@ -3,6 +3,7 @@ use std::path::PathBuf;
 use structopt::StructOpt;
 
 mod set1;
+mod set2;
 
 #[derive(StructOpt, Debug)]
 pub struct CryptopalArgs {
@@ -24,6 +25,7 @@ fn main() -> Result<()> {
 
     match args.set {
         1 => set1::run(&args)?,
+        2 => set2::run(&args)?,
         _ => anyhow::bail!("Set {} doesn't exist", args.set),
     };
 
