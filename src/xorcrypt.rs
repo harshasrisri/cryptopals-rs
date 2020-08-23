@@ -37,7 +37,7 @@ impl XORCrypt for Vec<u8> {
         }
         guess
             .map(|i| (PRINTABLE_ASCII[i], max_freq))
-            .ok_or(anyhow::anyhow!("Can't guess XOR key for message"))
+            .ok_or_else(|| anyhow::anyhow!("Can't guess XOR key for message"))
     }
 
     fn guess_vigenere(&self) -> Result<Vec<u8>> {

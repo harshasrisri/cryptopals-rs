@@ -1,18 +1,30 @@
 use crate::CryptopalArgs;
 use anyhow::Result;
-use cryptopals::encodecode::{PKCS7, Padding};
+use cryptopals::encodecode::{Padding, PKCS7};
 
 fn pkcs7padding() -> Result<()> {
     let input = "YELLOW SUBMARINE".to_owned().into_bytes();
-    println!("input - {:?}", input);
+    println!(
+        "input    - \"{}\" : {:?}",
+        String::from_utf8(input.clone())?,
+        input
+    );
 
     let mut padded = input.clone();
     PKCS7::pad(&mut padded, 20);
-    println!("Padded - {:?}", padded);
+    println!(
+        "Padded   - \"{}\" : {:?}",
+        String::from_utf8(padded.clone())?,
+        padded
+    );
 
-    let mut stripped = padded.clone();
+    let mut stripped = padded;
     PKCS7::strip(&mut stripped);
-    println!("Stripped - {:?}", stripped);
+    println!(
+        "Stripped - \"{}\" : {:?}",
+        String::from_utf8(stripped.clone())?,
+        stripped
+    );
 
     assert_eq!(input, stripped);
     println!("PKCS7 Padding(input) == Stripped");

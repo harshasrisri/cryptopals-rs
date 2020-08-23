@@ -1,6 +1,4 @@
 use anyhow::Result;
-use base64;
-use hex;
 
 pub trait Encoding {
     fn b64_encode(&self) -> String;
@@ -42,7 +40,11 @@ pub struct PKCS7;
 impl Padding for PKCS7 {
     fn pad(input: &mut Vec<u8>, block_size: u8) {
         let excess = block_size as usize - input.len() % block_size as usize;
-        let excess = if excess == 0 { block_size } else { excess as u8 };
+        let excess = if excess == 0 {
+            block_size
+        } else {
+            excess as u8
+        };
         input.extend(std::iter::repeat(excess).take(excess.into()));
     }
 
