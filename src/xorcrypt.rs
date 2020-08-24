@@ -2,14 +2,14 @@ use crate::constants::*;
 use crate::cryptobuf::*;
 use anyhow::Result;
 
-pub trait XORCrypt {
+pub trait XORCrypto {
     fn single_key_xor(&self, key: char) -> Vec<u8>;
     fn repeat_key_xor(&self, key: &str) -> Vec<u8>;
     fn guess_xor_key(&self) -> Result<(char, f32)>;
     fn guess_vigenere(&self) -> Result<Vec<u8>>;
 }
 
-impl XORCrypt for Vec<u8> {
+impl XORCrypto for Vec<u8> {
     fn single_key_xor(&self, key: char) -> Vec<u8> {
         self.iter().map(|&x| (x ^ key as u8)).collect::<Vec<u8>>()
     }

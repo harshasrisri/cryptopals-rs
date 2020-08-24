@@ -1,10 +1,10 @@
 use crate::CryptopalArgs;
 use anyhow::Result;
+use cryptopals::aes::{AesEcb128, Cipher};
 use cryptopals::constants::CARGO_HOME;
 use cryptopals::cryptobuf::*;
 use cryptopals::encodecode::*;
 use cryptopals::xorcrypt::*;
-use openssl::symm::{decrypt, Cipher};
 use std::collections::HashSet;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
@@ -124,10 +124,8 @@ fn aes_decrypt() -> Result<()> {
         .join("")
         .as_str()
         .b64_decode()?;
-    let ciphertext = input.as_slice();
     let key = b"YELLOW SUBMARINE";
-    let cipher = Cipher::aes_128_ecb();
-    let plaintext = decrypt(cipher, key, None, ciphertext)?;
+    let plaintext = AesEcb128::decrypt(key, input.as_slice())?;
     println!("Plain text: {}", String::from_utf8(plaintext)?);
     Ok(())
 }
