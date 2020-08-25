@@ -1,4 +1,5 @@
 use crate::constants::*;
+use crate::transpose;
 use anyhow::Result;
 
 pub trait XORCrypto {
@@ -50,10 +51,7 @@ impl XORCrypto for Vec<u8> {
                     .collect::<Vec<_>>();
                 for i in 0..NUM_CHUNKS_VIGENERE {
                     for j in i..NUM_CHUNKS_VIGENERE {
-                        hamming_distance += chunks[i]
-                            .to_vec()
-                            .hamming_distance(&chunks[j].to_vec())
-                            .unwrap();
+                        hamming_distance += chunks[i].hamming_distance(&chunks[j]).unwrap();
                     }
                 }
                 (
@@ -69,9 +67,8 @@ impl XORCrypto for Vec<u8> {
             .iter()
             .take(4)
             .map(|keysize| self.matrixify(keysize.0))
-            .map(|matrix| crate::transpose(&matrix))
             .map(|matrix| {
-                matrix
+                transpose(&matrix)
                     .iter()
                     .map(|row| row.guess_xor_key().unwrap().0 as u8)
                     .collect::<Vec<u8>>()
@@ -89,32 +86,45 @@ pub trait BufferOps {
     fn freq_rank(&self) -> f32;
     fn xor(&self, rhs: &Self) -> Result<Vec<u8>>;
     fn hamming_distance(&self, rhs: &Self) -> Result<u32>;
-    fn matrixify(&self, cols: usize) -> Vec<Vec<u8>>;
+    fn matrixify(&self, cols: usize) -> Vec<&[u8]>;
 }
 
-impl BufferOps for Vec<u8> {
+impl<T> BufferOps for T
+where
+    T: AsRef<[u8]>,
+{
     fn count_ones(&self) -> u32 {
-        self.iter().map(|b| b.count_ones()).sum()
+        self.as_ref().iter().map(|b| b.count_ones()).sum()
     }
 
     fn freq_rank(&self) -> f32 {
-        self.iter()
+        self.as_ref()
+            .iter()
             .map(|x| ETAOIN_SHRDLU.get(&x).unwrap_or(&0.0))
             .sum()
     }
 
-    fn xor(&self, rhs: &Self) -> Result<Self> {
-        anyhow::ensure!(self.len() == rhs.len(), "Input buffers differ in lengths");
-        Ok(self.iter().zip(rhs.iter()).map(|(l, r)| l ^ r).collect())
+    fn xor(&self, rhs: &Self) -> Result<Vec<u8>> {
+        anyhow::ensure!(
+            self.as_ref().len() == rhs.as_ref().len(),
+            "Input buffers differ in lengths"
+        );
+        Ok(self
+            .as_ref()
+            .iter()
+            .zip(rhs.as_ref().iter())
+            .map(|(l, r)| l ^ r)
+            .collect())
     }
 
     fn hamming_distance(&self, rhs: &Self) -> Result<u32> {
         Ok(self.xor(rhs)?.count_ones())
     }
 
-    fn matrixify(&self, cols: usize) -> Vec<Vec<u8>> {
-        self.chunks_exact(cols)
-            .map(|slice| slice.to_vec())
+    fn matrixify(&self, cols: usize) -> Vec<&[u8]> {
+        self.as_ref()
+            .chunks_exact(cols)
+            .map(|slice| slice)
             .collect::<Vec<_>>()
     }
 }
