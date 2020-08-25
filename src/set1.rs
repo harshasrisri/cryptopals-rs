@@ -2,7 +2,6 @@ use crate::CryptopalArgs;
 use anyhow::Result;
 use cryptopals::aes::{AesEcb128, Cipher};
 use cryptopals::constants::CARGO_HOME;
-use cryptopals::cryptobuf::*;
 use cryptopals::encodecode::*;
 use cryptopals::xorcrypt::*;
 use std::collections::HashSet;

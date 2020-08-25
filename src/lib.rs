@@ -1,6 +1,5 @@
 pub mod aes;
 pub mod constants;
-pub mod cryptobuf;
 pub mod encodecode;
 pub mod xorcrypt;
 
