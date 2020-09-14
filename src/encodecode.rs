@@ -50,10 +50,12 @@ impl Padding for PKCS7 {
 
     fn strip(input: &mut Vec<u8>) {
         let padding = if let Some(last) = input.last() {
-            *last
+            *last as usize
         } else {
-            0
+            return;
         };
-        input.truncate(input.len() - padding as usize);
+        if input[input.len() - padding..].iter().all(|byte| *byte == padding as u8) {
+            input.truncate(input.len() - padding as usize);
+        }
     }
 }
