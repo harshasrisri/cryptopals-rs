@@ -15,10 +15,11 @@ impl XORCrypto for Vec<u8> {
     }
 
     fn repeat_key_xor(&self, key: &str) -> Vec<u8> {
-        self.iter()
-            .enumerate()
-            .map(|(i, c)| c ^ (key.as_bytes()[i % key.len()] as u8))
-            .collect::<Vec<u8>>()
+        key.bytes()
+            .cycle()
+            .zip(self.iter())
+            .map(|(k, d)| k ^ d)
+            .collect()
     }
 
     fn guess_xor_key(&self) -> Result<(char, f32)> {
