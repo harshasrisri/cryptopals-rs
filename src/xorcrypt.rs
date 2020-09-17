@@ -90,32 +90,20 @@ pub trait BufferOps {
     fn matrixify(&self, cols: usize) -> Vec<&[u8]>;
 }
 
-impl<T> BufferOps for T
-where
-    T: AsRef<[u8]>,
-{
+impl BufferOps for [u8] {
     fn count_ones(&self) -> u32 {
-        self.as_ref().iter().map(|b| b.count_ones()).sum()
+        self.iter().map(|b| b.count_ones()).sum()
     }
 
     fn freq_rank(&self) -> f32 {
-        self.as_ref()
-            .iter()
+        self.iter()
             .map(|x| ETAOIN_SHRDLU.get(&x).unwrap_or(&0.0))
             .sum()
     }
 
     fn xor(&self, rhs: &Self) -> Result<Vec<u8>> {
-        anyhow::ensure!(
-            self.as_ref().len() == rhs.as_ref().len(),
-            "Input buffers differ in lengths"
-        );
-        Ok(self
-            .as_ref()
-            .iter()
-            .zip(rhs.as_ref().iter())
-            .map(|(l, r)| l ^ r)
-            .collect())
+        anyhow::ensure!(self.len() == rhs.len(), "Input buffers differ in lengths");
+        Ok(self.iter().zip(rhs.iter()).map(|(l, r)| l ^ r).collect())
     }
 
     fn hamming_distance(&self, rhs: &Self) -> Result<u32> {
@@ -123,9 +111,30 @@ where
     }
 
     fn matrixify(&self, cols: usize) -> Vec<&[u8]> {
-        self.as_ref()
-            .chunks_exact(cols)
+        self.chunks_exact(cols)
             .map(|slice| slice)
             .collect::<Vec<_>>()
+    }
+}
+
+impl BufferOps for Vec<u8> {
+    fn count_ones(&self) -> u32 {
+        self.as_slice().count_ones()
+    }
+
+    fn freq_rank(&self) -> f32 {
+        self.as_slice().freq_rank()
+    }
+
+    fn xor(&self, rhs: &Self) -> Result<Vec<u8>> {
+        self.as_slice().xor(rhs)
+    }
+
+    fn hamming_distance(&self, rhs: &Self) -> Result<u32> {
+        self.as_slice().hamming_distance(rhs)
+    }
+
+    fn matrixify(&self, cols: usize) -> Vec<&[u8]> {
+        self.as_slice().matrixify(cols)
     }
 }

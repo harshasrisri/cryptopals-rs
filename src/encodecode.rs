@@ -54,7 +54,10 @@ impl Padding for PKCS7 {
         } else {
             return;
         };
-        if input[input.len() - padding..].iter().all(|byte| *byte == padding as u8) {
+        if input[input.len() - padding..]
+            .iter()
+            .all(|byte| *byte == padding as u8)
+        {
             input.truncate(input.len() - padding as usize);
         }
     }
