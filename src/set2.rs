@@ -1,5 +1,7 @@
 use crate::CryptopalArgs;
 use anyhow::Result;
+use cryptopals::aes::{AesCbc128, Cipher};
+// use cryptopals::aes::O_AesCbc128;
 use cryptopals::constants::CARGO_HOME;
 use cryptopals::encodecode::*;
 use std::fs::File;
@@ -36,17 +38,26 @@ fn pkcs7padding() -> Result<()> {
 
 fn cbc_encrypt() -> Result<()> {
     let mut input = CARGO_HOME.to_owned();
-    input.push_str("/inputs/s1c7.txt");
+    input.push_str("/inputs/s2c2.txt");
     let input = File::open(input)?;
-    let _input = BufReader::new(input)
+    let input = BufReader::new(input)
         .lines()
         .filter_map(std::result::Result::ok)
-        .collect::<Vec<String>>()
-        .join("")
-        .as_str()
-        .b64_decode()?;
+        .flat_map(|line| line.b64_decode())
+        .flatten()
+        .collect::<Vec<u8>>();
 
-    unimplemented!()
+    let key = b"YELLOW SUBMARINE";
+    let output = AesCbc128::decrypt(key, input.as_slice())?;
+
+    // This verification was explicitly discouraged by cryptopals. However, it
+    // exists for reassurance that our decryption works like actual CBC
+    // let mut output2 = O_AesCbc128::decrypt(key, input.as_slice())?;
+    // assert_eq!(output1, output2);
+
+    println!("CBC decrypted output:");
+    println!("{}", String::from_utf8(output)?);
+    Ok(())
 }
 
 pub fn run(args: &CryptopalArgs) -> Result<()> {
