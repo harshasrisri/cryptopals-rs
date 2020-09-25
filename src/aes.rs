@@ -1,6 +1,6 @@
 use crate::xorcrypt::BufferOps;
 use anyhow::Result;
-use openssl::symm::{decrypt as oDecrypt, encrypt as oEncrypt, Cipher as oCipher, Crypter, Mode};
+use openssl::symm::{Cipher as oCipher, Crypter, Mode};
 
 pub trait Cipher {
     const BLOCK_SIZE: usize;
@@ -14,11 +14,33 @@ impl Cipher for AesEcb128 {
     const BLOCK_SIZE: usize = 16;
 
     fn encrypt(key: &[u8], data: &[u8]) -> Result<Vec<u8>> {
-        oEncrypt(oCipher::aes_128_ecb(), key, None, data).map_err(|e| anyhow::Error::new(e))
+        let mut crypter = Crypter::new(oCipher::aes_128_ecb(), Mode::Encrypt, key, None)?;
+        let res = data.chunks(Self::BLOCK_SIZE)
+            .map(|plaintext| {
+                let mut ciphertext = vec![0 as u8; Self::BLOCK_SIZE * 2];
+                let size = crypter.update(plaintext, ciphertext.as_mut_slice())?;
+                Ok(ciphertext[size .. size + Self::BLOCK_SIZE].to_vec())
+            })
+            .collect::<Result<Vec<_>>>()?
+            .into_iter()
+            .flatten()
+            .collect();
+        Ok(res)
     }
 
     fn decrypt(key: &[u8], data: &[u8]) -> Result<Vec<u8>> {
-        oDecrypt(oCipher::aes_128_ecb(), key, None, data).map_err(|e| anyhow::Error::new(e))
+        let mut crypter = Crypter::new(oCipher::aes_128_ecb(), Mode::Decrypt, key, None)?;
+        let res = data.chunks(Self::BLOCK_SIZE)
+            .map(|ciphertext| {
+                let mut plaintext = vec![0 as u8; Self::BLOCK_SIZE * 2];
+                let size = crypter.update(ciphertext, plaintext .as_mut_slice())?;
+                Ok(plaintext[size .. size + Self::BLOCK_SIZE].to_vec())
+            })
+            .collect::<Result<Vec<_>>>()?
+            .into_iter()
+            .flatten()
+            .collect();
+        Ok(res)
     }
 }
 
@@ -38,16 +60,21 @@ impl Cipher for AesCbc128 {
             .chain(data.chunks(Self::BLOCK_SIZE))
             .collect::<Vec<_>>()
             .windows(2)
-            .flat_map(|window| {
+            .map(|window| {
                 let iv = window[0];
                 let ciphertext = window[1];
                 let mut interim = vec![0 as u8; Self::BLOCK_SIZE * 2];
-                let size = crypter.update(ciphertext, interim.as_mut_slice()).unwrap();
-                let plaintext = iv.xor(&interim[size..size + Self::BLOCK_SIZE]).unwrap();
-                // println!("{} --decrypt--> {}({}) --XOR--> {} = {}", ciphertext.hex_encode(), interim.hex_encode(), size, iv.hex_encode(), plaintext.hex_encode());
-                plaintext
+                let size = crypter.update(ciphertext, interim.as_mut_slice())?;
+                let plaintext = iv.xor(&interim[size..size + Self::BLOCK_SIZE])?;
+                // println!("{} --decrypt--> {}({}) --XOR--> {} = {}", 
+                //          ciphertext.hex_encode(), interim.hex_encode(), 
+                //          size, iv.hex_encode(), plaintext.hex_encode());
+                Ok(plaintext)
             })
-            .collect::<Vec<u8>>();
+            .collect::<Result<Vec<_>>>()?
+            .into_iter()
+            .flatten()
+            .collect();
         // res.extend_from_slice(vec![0 as u8; Self::BLOCK_SIZE * 2].as_slice());
         // crypter.finalize(&mut res[data.len()..])?;
         Ok(res)
