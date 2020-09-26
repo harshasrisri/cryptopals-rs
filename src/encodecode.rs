@@ -30,35 +30,35 @@ impl<T: ?Sized + AsRef<[u8]>> Decoding for T {
     }
 }
 
-pub trait Padding {
-    fn pad(input: &mut Vec<u8>, block_size: u8);
-    fn strip(input: &mut Vec<u8>);
+pub trait PKCS7 {
+    fn pad(self, block_size: u8) -> Self;
+    fn strip(self) -> Self;
 }
 
-pub struct PKCS7;
-
-impl Padding for PKCS7 {
-    fn pad(input: &mut Vec<u8>, block_size: u8) {
-        let excess = block_size as usize - input.len() % block_size as usize;
+impl PKCS7 for Vec<u8> {
+    fn pad(mut self, block_size: u8) -> Vec<u8> {
+        let excess = block_size as usize - self.len() % block_size as usize;
         let excess = if excess == 0 {
             block_size
         } else {
             excess as u8
         };
-        input.extend(std::iter::repeat(excess).take(excess.into()));
+        self.extend(std::iter::repeat(excess).take(excess.into()));
+        self
     }
 
-    fn strip(input: &mut Vec<u8>) {
-        let padding = if let Some(last) = input.last() {
+    fn strip(mut self) -> Vec<u8> {
+        let padding = if let Some(last) = self.last() {
             *last as usize
         } else {
-            return;
+            return self;
         };
-        if input[input.len() - padding..]
+        if self[self.len() - padding..]
             .iter()
             .all(|byte| *byte == padding as u8)
         {
-            input.truncate(input.len() - padding as usize);
+            self.truncate(self.len() - padding as usize);
         }
+        self
     }
 }

@@ -15,16 +15,14 @@ fn pkcs7padding() -> Result<()> {
         input
     );
 
-    let mut padded = input.clone();
-    PKCS7::pad(&mut padded, 20);
+    let padded = input.clone().pad(20);
     println!(
         "Padded   - \"{}\" : {:?}",
         String::from_utf8(padded.clone())?,
         padded
     );
 
-    let mut stripped = padded;
-    PKCS7::strip(&mut stripped);
+    let stripped = padded.strip();
     println!(
         "Stripped - \"{}\" : {:?}",
         String::from_utf8(stripped.clone())?,

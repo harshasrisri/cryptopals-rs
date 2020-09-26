@@ -83,3 +83,17 @@ pub fn test_vigenere() -> Result<()> {
     assert_eq!(cipherblob, reconstructed);
     Ok(())
 }
+
+#[test]
+fn test_pkcs7() {
+    const SIZE: u8 = 16;
+    for i in 0..SIZE+1 {
+        let input = vec![i; i as usize];
+        println!("{:?}", input);
+        let padded = input.clone().pad(SIZE);
+        println!("{:?}", padded);
+        let stripped = padded.strip();
+        println!("{:?}", stripped);
+        assert_eq!(input, stripped);
+    }
+}
