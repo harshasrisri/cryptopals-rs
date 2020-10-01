@@ -43,6 +43,4 @@ lazy_static! {
     .collect();
 }
 
-pub const NUM_CHUNKS_VIGENERE: usize = 4;
-pub const CHUNK_COMBOS: usize = 6;
 pub const CARGO_HOME: &str = env!("CARGO_MANIFEST_DIR");

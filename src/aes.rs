@@ -1,4 +1,4 @@
-use crate::xorcrypt::BufferOps;
+use crate::xorcrypt::XORCrypto;
 use anyhow::Result;
 use openssl::symm::{Cipher as oCipher, Crypter, Mode};
 

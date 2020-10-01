@@ -3,21 +3,27 @@ use crate::transpose;
 use anyhow::Result;
 
 pub trait XORCrypto {
+    fn xor(&self, rhs: &Self) -> Result<Vec<u8>>;
     fn single_key_xor(&self, key: char) -> Vec<u8>;
     fn repeat_key_xor(&self, key: &str) -> Vec<u8>;
     fn guess_xor_key(&self) -> Result<(char, f32)>;
     fn guess_vigenere(&self) -> Result<Vec<u8>>;
 }
 
-impl XORCrypto for Vec<u8> {
+impl<T: ?Sized + AsRef<[u8]>> XORCrypto for T {
+    fn xor(&self, rhs: &Self) -> Result<Vec<u8>> {
+        anyhow::ensure!(self.as_ref().len() == rhs.as_ref().len(), "Input buffers differ in lengths");
+        Ok(self.as_ref().iter().zip(rhs.as_ref().iter()).map(|(l, r)| l ^ r).collect())
+    }
+
     fn single_key_xor(&self, key: char) -> Vec<u8> {
-        self.iter().map(|&x| (x ^ key as u8)).collect::<Vec<u8>>()
+        self.as_ref().iter().map(|&x| (x ^ key as u8)).collect::<Vec<u8>>()
     }
 
     fn repeat_key_xor(&self, key: &str) -> Vec<u8> {
         key.bytes()
             .cycle()
-            .zip(self.iter())
+            .zip(self.as_ref().iter())
             .map(|(k, d)| k ^ d)
             .collect()
     }
@@ -42,11 +48,12 @@ impl XORCrypto for Vec<u8> {
     }
 
     fn guess_vigenere(&self) -> Result<Vec<u8>> {
+        const NUM_CHUNKS_VIGENERE: usize = 4;
         let chunk_combinations = NUM_CHUNKS_VIGENERE * (NUM_CHUNKS_VIGENERE - 1) / 2;
-        let mut normalized_keysizes = (2..std::cmp::min(40, self.len() / NUM_CHUNKS_VIGENERE))
+        let mut normalized_keysizes = (2..std::cmp::min(40, self.as_ref().len() / NUM_CHUNKS_VIGENERE))
             .map(|n| {
                 let mut hamming_distance = 0;
-                let chunks = self
+                let chunks = self.as_ref()
                     .chunks_exact(n)
                     .take(NUM_CHUNKS_VIGENERE)
                     .collect::<Vec<_>>();
@@ -67,7 +74,7 @@ impl XORCrypto for Vec<u8> {
         let mut guessed_keys = normalized_keysizes
             .iter()
             .take(4)
-            .map(|keysize| self.matrixify(keysize.0))
+            .map(|keysize| self.as_ref().matrixify(keysize.0))
             .map(|matrix| {
                 transpose(&matrix)
                     .iter()
@@ -85,7 +92,6 @@ impl XORCrypto for Vec<u8> {
 pub trait BufferOps {
     fn count_ones(&self) -> u32;
     fn freq_rank(&self) -> f32;
-    fn xor(&self, rhs: &Self) -> Result<Vec<u8>>;
     fn hamming_distance(&self, rhs: &Self) -> Result<u32>;
     fn matrixify(&self, cols: usize) -> Vec<&[u8]>;
 }
@@ -99,11 +105,6 @@ impl BufferOps for [u8] {
         self.iter()
             .map(|x| ETAOIN_SHRDLU.get(&x).unwrap_or(&0.0))
             .sum()
-    }
-
-    fn xor(&self, rhs: &Self) -> Result<Vec<u8>> {
-        anyhow::ensure!(self.len() == rhs.len(), "Input buffers differ in lengths");
-        Ok(self.iter().zip(rhs.iter()).map(|(l, r)| l ^ r).collect())
     }
 
     fn hamming_distance(&self, rhs: &Self) -> Result<u32> {
@@ -124,10 +125,6 @@ impl BufferOps for Vec<u8> {
 
     fn freq_rank(&self) -> f32 {
         self.as_slice().freq_rank()
-    }
-
-    fn xor(&self, rhs: &Self) -> Result<Vec<u8>> {
-        self.as_slice().xor(rhs)
     }
 
     fn hamming_distance(&self, rhs: &Self) -> Result<u32> {
