@@ -2,7 +2,6 @@ use crate::CryptopalArgs;
 use anyhow::Result;
 use cryptopals::aes::{AesCbc128, Cipher};
 // use cryptopals::aes::O_AesCbc128;
-use cryptopals::constants::CARGO_HOME;
 use cryptopals::encodecode::*;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
@@ -35,8 +34,7 @@ fn pkcs7padding() -> Result<()> {
 }
 
 fn cbc_encrypt() -> Result<()> {
-    let mut input = CARGO_HOME.to_owned();
-    input.push_str("/inputs/s2c2.txt");
+    let input = "inputs/s2c2.txt";
     let input = File::open(input)?;
     let input = BufReader::new(input)
         .lines()

@@ -42,5 +42,3 @@ lazy_static! {
     .cloned()
     .collect();
 }
-
-pub const CARGO_HOME: &str = env!("CARGO_MANIFEST_DIR");

@@ -1,7 +1,6 @@
 use crate::CryptopalArgs;
 use anyhow::Result;
 use cryptopals::aes::{AesEcb128, Cipher};
-use cryptopals::constants::CARGO_HOME;
 use cryptopals::encodecode::*;
 use cryptopals::xorcrypt::*;
 use std::collections::HashSet;
@@ -47,8 +46,7 @@ fn single_byte_xor() -> Result<()> {
 }
 
 fn detect_single_char_xor() -> Result<()> {
-    let mut input = CARGO_HOME.to_owned();
-    input.push_str("/inputs/s1c4.txt");
+    let input = "inputs/s1c4.txt";
     println!("input file: {}", input);
     let input = File::open(input)?;
     let mut max_rank = 0.0;
@@ -92,8 +90,7 @@ fn repeat_key_xor() {
 }
 
 fn break_repeat_key_xor() -> Result<()> {
-    let mut input = CARGO_HOME.to_owned();
-    input.push_str("/inputs/s1c6.txt");
+    let input = "inputs/s1c6.txt";
     println!("{}", input);
     let input = File::open(input)?;
     let input = BufReader::new(input)
@@ -113,8 +110,7 @@ fn break_repeat_key_xor() -> Result<()> {
 }
 
 fn aes_decrypt() -> Result<()> {
-    let mut input = CARGO_HOME.to_owned();
-    input.push_str("/inputs/s1c7.txt");
+    let input = "inputs/s1c7.txt";
     let input = File::open(input)?;
     let input = BufReader::new(input)
         .lines()
@@ -130,8 +126,7 @@ fn aes_decrypt() -> Result<()> {
 }
 
 fn detect_aes_ecb() -> Result<()> {
-    let mut input = CARGO_HOME.to_owned();
-    input.push_str("/inputs/s1c8.txt");
+    let input = "inputs/s1c8.txt";
     println!("input file: {}", input);
     let input = File::open(input)?;
     for (i, line) in BufReader::new(input)

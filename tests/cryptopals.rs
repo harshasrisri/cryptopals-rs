@@ -87,7 +87,7 @@ pub fn test_vigenere() -> Result<()> {
 #[test]
 fn test_pkcs7() {
     const SIZE: u8 = 16;
-    for i in 0..SIZE+1 {
+    for i in 0..SIZE + 1 {
         let input = vec![i; i as usize];
         println!("{:?}", input);
         let padded = input.clone().pad(SIZE);

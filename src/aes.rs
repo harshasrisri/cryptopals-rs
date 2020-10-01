@@ -15,11 +15,12 @@ impl Cipher for AesEcb128 {
 
     fn encrypt(key: &[u8], data: &[u8]) -> Result<Vec<u8>> {
         let mut crypter = Crypter::new(oCipher::aes_128_ecb(), Mode::Encrypt, key, None)?;
-        let res = data.chunks(Self::BLOCK_SIZE)
+        let res = data
+            .chunks(Self::BLOCK_SIZE)
             .map(|plaintext| {
                 let mut ciphertext = vec![0 as u8; Self::BLOCK_SIZE * 2];
                 let size = crypter.update(plaintext, ciphertext.as_mut_slice())?;
-                Ok(ciphertext[size .. size + Self::BLOCK_SIZE].to_vec())
+                Ok(ciphertext[size..size + Self::BLOCK_SIZE].to_vec())
             })
             .collect::<Result<Vec<_>>>()?
             .into_iter()
@@ -30,11 +31,12 @@ impl Cipher for AesEcb128 {
 
     fn decrypt(key: &[u8], data: &[u8]) -> Result<Vec<u8>> {
         let mut crypter = Crypter::new(oCipher::aes_128_ecb(), Mode::Decrypt, key, None)?;
-        let res = data.chunks(Self::BLOCK_SIZE)
+        let res = data
+            .chunks(Self::BLOCK_SIZE)
             .map(|ciphertext| {
                 let mut plaintext = vec![0 as u8; Self::BLOCK_SIZE * 2];
-                let size = crypter.update(ciphertext, plaintext .as_mut_slice())?;
-                Ok(plaintext[size .. size + Self::BLOCK_SIZE].to_vec())
+                let size = crypter.update(ciphertext, plaintext.as_mut_slice())?;
+                Ok(plaintext[size..size + Self::BLOCK_SIZE].to_vec())
             })
             .collect::<Result<Vec<_>>>()?
             .into_iter()
@@ -66,8 +68,8 @@ impl Cipher for AesCbc128 {
                 let mut interim = vec![0 as u8; Self::BLOCK_SIZE * 2];
                 let size = crypter.update(ciphertext, interim.as_mut_slice())?;
                 let plaintext = iv.xor(&interim[size..size + Self::BLOCK_SIZE])?;
-                // println!("{} --decrypt--> {}({}) --XOR--> {} = {}", 
-                //          ciphertext.hex_encode(), interim.hex_encode(), 
+                // println!("{} --decrypt--> {}({}) --XOR--> {} = {}",
+                //          ciphertext.hex_encode(), interim.hex_encode(),
                 //          size, iv.hex_encode(), plaintext.hex_encode());
                 Ok(plaintext)
             })

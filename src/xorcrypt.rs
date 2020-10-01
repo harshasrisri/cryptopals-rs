@@ -13,12 +13,23 @@ pub trait XORCrypto {
 
 impl<T: ?Sized + AsRef<[u8]>> XORCrypto for T {
     fn xor(&self, rhs: &Self) -> Result<Vec<u8>> {
-        anyhow::ensure!(self.as_ref().len() == rhs.as_ref().len(), "Input buffers differ in lengths");
-        Ok(self.as_ref().iter().zip(rhs.as_ref().iter()).map(|(l, r)| l ^ r).collect())
+        anyhow::ensure!(
+            self.as_ref().len() == rhs.as_ref().len(),
+            "Input buffers differ in lengths"
+        );
+        Ok(self
+            .as_ref()
+            .iter()
+            .zip(rhs.as_ref().iter())
+            .map(|(l, r)| l ^ r)
+            .collect())
     }
 
     fn single_key_xor(&self, key: char) -> Vec<u8> {
-        self.as_ref().iter().map(|&x| (x ^ key as u8)).collect::<Vec<u8>>()
+        self.as_ref()
+            .iter()
+            .map(|&x| (x ^ key as u8))
+            .collect::<Vec<u8>>()
     }
 
     fn repeat_key_xor(&self, key: &str) -> Vec<u8> {
@@ -51,24 +62,26 @@ impl<T: ?Sized + AsRef<[u8]>> XORCrypto for T {
     fn guess_vigenere(&self) -> Result<Vec<u8>> {
         const NUM_CHUNKS_VIGENERE: usize = 4;
         let chunk_combinations = NUM_CHUNKS_VIGENERE * (NUM_CHUNKS_VIGENERE - 1) / 2;
-        let mut normalized_keysizes = (2..std::cmp::min(40, self.as_ref().len() / NUM_CHUNKS_VIGENERE))
-            .map(|n| {
-                let mut hamming_distance = 0;
-                let chunks = self.as_ref()
-                    .chunks_exact(n)
-                    .take(NUM_CHUNKS_VIGENERE)
-                    .collect::<Vec<_>>();
-                for i in 0..NUM_CHUNKS_VIGENERE {
-                    for j in i..NUM_CHUNKS_VIGENERE {
-                        hamming_distance += chunks[i].hamming_distance(&chunks[j]).unwrap();
+        let mut normalized_keysizes =
+            (2..std::cmp::min(40, self.as_ref().len() / NUM_CHUNKS_VIGENERE))
+                .map(|n| {
+                    let mut hamming_distance = 0;
+                    let chunks = self
+                        .as_ref()
+                        .chunks_exact(n)
+                        .take(NUM_CHUNKS_VIGENERE)
+                        .collect::<Vec<_>>();
+                    for i in 0..NUM_CHUNKS_VIGENERE {
+                        for j in i..NUM_CHUNKS_VIGENERE {
+                            hamming_distance += chunks[i].hamming_distance(&chunks[j]).unwrap();
+                        }
                     }
-                }
-                (
-                    n,
-                    (hamming_distance as f32 / chunk_combinations as f32 / n as f32) as usize,
-                )
-            })
-            .collect::<Vec<_>>();
+                    (
+                        n,
+                        (hamming_distance as f32 / chunk_combinations as f32 / n as f32) as usize,
+                    )
+                })
+                .collect::<Vec<_>>();
 
         normalized_keysizes.sort_by(|a, b| (a.1).cmp(&b.1));
 
