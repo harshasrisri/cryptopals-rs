@@ -1,4 +1,5 @@
-use crate::constants::*;
+use crate::buffer::BufferOps;
+use crate::constants::PRINTABLE_ASCII;
 use crate::transpose;
 use anyhow::Result;
 
@@ -86,52 +87,5 @@ impl<T: ?Sized + AsRef<[u8]>> XORCrypto for T {
 
         guessed_keys.sort_by(|a, b| (b.0).partial_cmp(&a.0).unwrap());
         Ok(guessed_keys[0].1.to_vec())
-    }
-}
-
-pub trait BufferOps {
-    fn count_ones(&self) -> u32;
-    fn freq_rank(&self) -> f32;
-    fn hamming_distance(&self, rhs: &Self) -> Result<u32>;
-    fn matrixify(&self, cols: usize) -> Vec<&[u8]>;
-}
-
-impl BufferOps for [u8] {
-    fn count_ones(&self) -> u32 {
-        self.iter().map(|b| b.count_ones()).sum()
-    }
-
-    fn freq_rank(&self) -> f32 {
-        self.iter()
-            .map(|x| ETAOIN_SHRDLU.get(&x).unwrap_or(&0.0))
-            .sum()
-    }
-
-    fn hamming_distance(&self, rhs: &Self) -> Result<u32> {
-        Ok(self.xor(rhs)?.count_ones())
-    }
-
-    fn matrixify(&self, cols: usize) -> Vec<&[u8]> {
-        self.chunks_exact(cols)
-            .map(|slice| slice)
-            .collect::<Vec<_>>()
-    }
-}
-
-impl BufferOps for Vec<u8> {
-    fn count_ones(&self) -> u32 {
-        self.as_slice().count_ones()
-    }
-
-    fn freq_rank(&self) -> f32 {
-        self.as_slice().freq_rank()
-    }
-
-    fn hamming_distance(&self, rhs: &Self) -> Result<u32> {
-        self.as_slice().hamming_distance(rhs)
-    }
-
-    fn matrixify(&self, cols: usize) -> Vec<&[u8]> {
-        self.as_slice().matrixify(cols)
     }
 }

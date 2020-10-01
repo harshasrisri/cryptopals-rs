@@ -2,6 +2,7 @@ pub mod aes;
 pub mod constants;
 pub mod encodecode;
 pub mod xorcrypt;
+pub mod buffer;
 
 #[macro_use]
 extern crate lazy_static;
