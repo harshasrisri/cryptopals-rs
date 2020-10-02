@@ -1,8 +1,7 @@
 use anyhow::Result;
+use cryptopals::buffer::*;
 use cryptopals::encodecode::*;
 use cryptopals::xorcrypt::*;
-use std::fs::File;
-use std::io::{BufRead, BufReader};
 
 #[test]
 pub fn test_hex2base64() -> Result<()> {
@@ -69,14 +68,7 @@ pub fn test_hamming_distance() -> Result<()> {
 
 #[test]
 pub fn test_vigenere() -> Result<()> {
-    let input = File::open("inputs/s1c6.txt").unwrap();
-    let cipherblob = BufReader::new(input)
-        .lines()
-        .filter_map(std::result::Result::ok)
-        .collect::<Vec<String>>()
-        .join("")
-        .as_str()
-        .b64_decode()?;
+    let cipherblob = decode_b64_file("inputs/s1c6.txt")?;
     let guessed_key = String::from_utf8(cipherblob.guess_vigenere()?).unwrap();
     let plainblob = cipherblob.repeat_key_xor(guessed_key.as_str());
     let reconstructed = plainblob.repeat_key_xor(guessed_key.as_str());

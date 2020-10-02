@@ -81,25 +81,12 @@ fn repeat_key_xor() {
         "-\n{}\n-\nAbove text repeatedly XOR'ed with the key {} is:\n{}",
         input,
         key,
-        input
-            .bytes()
-            .collect::<Vec<u8>>()
-            .repeat_key_xor("ICE")
-            .hex_encode()
+        input.as_bytes().repeat_key_xor("ICE").hex_encode()
     );
 }
 
 fn break_repeat_key_xor() -> Result<()> {
-    let input = "inputs/s1c6.txt";
-    println!("{}", input);
-    let input = File::open(input)?;
-    let input = BufReader::new(input)
-        .lines()
-        .filter_map(std::result::Result::ok)
-        .collect::<Vec<String>>()
-        .join("")
-        .as_str()
-        .b64_decode()?;
+    let input = decode_b64_file("inputs/s1c6.txt")?;
     let guessed_key = String::from_utf8(input.guess_vigenere()?)?;
     println!("Vigenere Key: {}", guessed_key);
     println!(
@@ -110,15 +97,7 @@ fn break_repeat_key_xor() -> Result<()> {
 }
 
 fn aes_decrypt() -> Result<()> {
-    let input = "inputs/s1c7.txt";
-    let input = File::open(input)?;
-    let input = BufReader::new(input)
-        .lines()
-        .filter_map(std::result::Result::ok)
-        .collect::<Vec<String>>()
-        .join("")
-        .as_str()
-        .b64_decode()?;
+    let input = decode_b64_file("inputs/s1c7.txt")?;
     let key = b"YELLOW SUBMARINE";
     let plaintext = AesEcb128::decrypt(key, input.as_slice())?;
     println!("Plain text: {}", String::from_utf8(plaintext)?);

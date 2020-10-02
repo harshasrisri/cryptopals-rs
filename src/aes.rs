@@ -51,14 +51,17 @@ pub struct AesCbc128;
 impl Cipher for AesCbc128 {
     const BLOCK_SIZE: usize = 16;
 
-    fn encrypt(_key: &[u8], _data: &[u8]) -> Result<Vec<u8>> {
+    fn encrypt(key: &[u8], _data: &[u8]) -> Result<Vec<u8>> {
+        let mut _crypter = Crypter::new(oCipher::aes_128_ecb(), Mode::Encrypt, key, None)?;
         unimplemented!()
     }
 
     fn decrypt(key: &[u8], data: &[u8]) -> Result<Vec<u8>> {
         let mut crypter = Crypter::new(oCipher::aes_128_ecb(), Mode::Decrypt, key, None)?;
-        let res = vec![0; Self::BLOCK_SIZE]
+        let iv = vec![0; Self::BLOCK_SIZE];
+        let res = iv
             .chunks(Self::BLOCK_SIZE)
+            .take(1)
             .chain(data.chunks(Self::BLOCK_SIZE))
             .collect::<Vec<_>>()
             .windows(2)

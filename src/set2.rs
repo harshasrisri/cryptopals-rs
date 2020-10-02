@@ -3,8 +3,6 @@ use anyhow::Result;
 use cryptopals::aes::{AesCbc128, Cipher};
 // use cryptopals::aes::O_AesCbc128;
 use cryptopals::encodecode::*;
-use std::fs::File;
-use std::io::{BufRead, BufReader};
 
 fn pkcs7padding() -> Result<()> {
     let input = "YELLOW SUBMARINE".to_owned().into_bytes();
@@ -34,15 +32,7 @@ fn pkcs7padding() -> Result<()> {
 }
 
 fn cbc_encrypt() -> Result<()> {
-    let input = "inputs/s2c2.txt";
-    let input = File::open(input)?;
-    let input = BufReader::new(input)
-        .lines()
-        .filter_map(std::result::Result::ok)
-        .flat_map(|line| line.b64_decode())
-        .flatten()
-        .collect::<Vec<u8>>();
-
+    let input = decode_b64_file("inputs/s2c2.txt")?;
     let key = b"YELLOW SUBMARINE";
     let output = AesCbc128::decrypt(key, input.as_slice())?;
 
