@@ -28,8 +28,6 @@ pub fn test_fixed_xor() -> Result<()> {
 pub fn test_single_key_xor() -> Result<()> {
     assert_eq!(
         "Cooking MC's like a pound of bacon"
-            .bytes()
-            .collect::<Vec<u8>>()
             .single_key_xor('X')
             .hex_encode(),
         "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736"
@@ -60,8 +58,8 @@ pub fn test_repeat_key_xor() -> Result<()> {
 
 #[test]
 pub fn test_hamming_distance() -> Result<()> {
-    let str1 = "this is a test".as_bytes().to_vec();
-    let str2 = "wokka wokka!!!".as_bytes().to_vec();
+    let str1 = "this is a test";
+    let str2 = "wokka wokka!!!";
     assert_eq!(str1.hamming_distance(&str2).unwrap(), 37);
     Ok(())
 }

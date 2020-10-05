@@ -82,7 +82,7 @@ fn repeat_key_xor() {
         "-\n{}\n-\nAbove text repeatedly XOR'ed with the key {} is:\n{}",
         input,
         key,
-        input.as_bytes().repeat_key_xor("ICE").hex_encode()
+        input.repeat_key_xor("ICE").hex_encode()
     );
 }
 
