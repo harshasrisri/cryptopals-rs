@@ -1,13 +1,12 @@
 pub mod aes;
 pub mod buffer;
-pub mod constants;
 pub mod xorcrypt;
 
+use crate::buffer::Decoding;
 use anyhow::Result;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::Path;
-use crate::buffer::Decoding;
 
 #[macro_use]
 extern crate lazy_static;

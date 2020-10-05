@@ -1,6 +1,18 @@
-use crate::constants::ETAOIN_SHRDLU;
 use crate::xorcrypt::XORCrypto;
 use anyhow::Result;
+use std::collections::HashMap;
+
+#[rustfmt::skip]
+lazy_static! {
+    static ref ETAOIN_SHRDLU: HashMap<u8, f32> = [
+        (b' ', 13.00), (b'e', 12.70), (b't', 9.056), (b'a', 8.167), (b'o', 7.507),
+        (b'i', 6.966), (b'n', 6.749), (b's', 6.327), (b'h', 6.094), (b'r', 5.987),
+        (b'd', 4.253), (b'l', 4.025), (b'u', 2.758), (b'b', 1.492), (b'c', 2.782),
+        (b'f', 2.228), (b'g', 2.015), (b'j', 0.153), (b'k', 0.772), (b'm', 2.406),
+        (b'p', 1.929), (b'q', 0.095), (b'v', 0.978), (b'w', 2.360), (b'x', 0.150),
+        (b'y', 1.974), (b'z', 0.074),
+    ].iter().cloned().collect();
+}
 
 pub trait BufferOps {
     fn count_ones(&self) -> u32;
