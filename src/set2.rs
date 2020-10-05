@@ -2,7 +2,8 @@ use crate::CryptopalArgs;
 use anyhow::Result;
 use cryptopals::aes::{AesCbc128, Cipher};
 // use cryptopals::aes::O_AesCbc128;
-use cryptopals::encodecode::*;
+use cryptopals::buffer::*;
+use cryptopals::decode_b64_file;
 
 fn pkcs7padding() -> Result<()> {
     let input = "YELLOW SUBMARINE".to_owned().into_bytes();

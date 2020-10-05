@@ -1,6 +1,6 @@
 use anyhow::Result;
 use cryptopals::buffer::*;
-use cryptopals::encodecode::*;
+use cryptopals::decode_b64_file;
 use cryptopals::xorcrypt::*;
 
 #[test]

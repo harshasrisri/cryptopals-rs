@@ -1,8 +1,13 @@
 pub mod aes;
 pub mod buffer;
 pub mod constants;
-pub mod encodecode;
 pub mod xorcrypt;
+
+use anyhow::Result;
+use std::fs::File;
+use std::io::{BufRead, BufReader};
+use std::path::Path;
+use crate::buffer::Decoding;
 
 #[macro_use]
 extern crate lazy_static;
@@ -22,4 +27,18 @@ where
     }
 
     trans
+}
+
+pub fn decode_b64_file<P>(path: P) -> Result<Vec<u8>>
+where
+    P: AsRef<Path>,
+{
+    let input = File::open(path)?;
+    let res = BufReader::new(input)
+        .lines()
+        .filter_map(std::result::Result::ok)
+        .flat_map(|line| line.b64_decode())
+        .flatten()
+        .collect();
+    Ok(res)
 }

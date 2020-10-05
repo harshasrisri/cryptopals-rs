@@ -1,7 +1,8 @@
 use crate::CryptopalArgs;
 use anyhow::Result;
 use cryptopals::aes::{AesEcb128, Cipher};
-use cryptopals::encodecode::*;
+use cryptopals::buffer::*;
+use cryptopals::decode_b64_file;
 use cryptopals::xorcrypt::*;
 use std::collections::HashSet;
 use std::fs::File;
