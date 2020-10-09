@@ -32,15 +32,14 @@ fn pkcs7padding() -> Result<()> {
     Ok(())
 }
 
-fn cbc_encrypt() -> Result<()> {
-    let input = decode_b64_file("inputs/s2c2.txt")?;
+fn implement_cbc() -> Result<()> {
+    let iv = vec![0; 16];
     let key = b"YELLOW SUBMARINE";
-    let output = AesCbc128::decrypt(key, input.as_slice())?;
-
-    // This verification was explicitly discouraged by cryptopals. However, it
-    // exists for reassurance that our decryption works like actual CBC
-    // let mut output2 = O_AesCbc128::decrypt(key, input.as_slice())?;
-    // assert_eq!(output1, output2);
+    let input = decode_b64_file("inputs/s2c2.txt")?;
+    let output = AesCbc128::decrypt(key, Some(iv.as_slice()), input.as_slice())?;
+    // let re_enc = AesCbc128::encrypt(key, Some(iv.as_slice()), output.as_slice())?;
+    // assert_eq!(input, re_enc);
+    // let output = AesCbc128::decrypt(key, Some(iv.as_slice()), re_enc.as_slice())?;
 
     println!("CBC decrypted output:");
     println!("{}", String::from_utf8(output)?);
@@ -50,7 +49,7 @@ fn cbc_encrypt() -> Result<()> {
 pub fn run(args: &CryptopalArgs) -> Result<()> {
     match args.challenge {
         1 => pkcs7padding()?,
-        2 => cbc_encrypt()?,
+        2 => implement_cbc()?,
         _ => anyhow::bail!(
             "Challenge {} doesn't exist in set {}",
             args.challenge,
