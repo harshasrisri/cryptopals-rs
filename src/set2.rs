@@ -37,9 +37,6 @@ fn implement_cbc() -> Result<()> {
     let key = b"YELLOW SUBMARINE";
     let input = decode_b64_file("inputs/s2c2.txt")?;
     let output = AesCbc128::decrypt(key, Some(iv.as_slice()), input.as_slice())?;
-    // let re_enc = AesCbc128::encrypt(key, Some(iv.as_slice()), output.as_slice())?;
-    // assert_eq!(input, re_enc);
-    // let output = AesCbc128::decrypt(key, Some(iv.as_slice()), re_enc.as_slice())?;
 
     println!("CBC decrypted output:");
     println!("{}", String::from_utf8(output)?);

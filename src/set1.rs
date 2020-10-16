@@ -101,9 +101,6 @@ fn aes_decrypt() -> Result<()> {
     let input = decode_b64_file("inputs/s1c7.txt")?;
     let key = b"YELLOW SUBMARINE";
     let output = AesEcb128::decrypt(key, None, input.as_slice())?;
-    // let re_enc = AesEcb128::encrypt(key, None, output.as_slice())?;
-    // assert_eq!(input, re_enc);
-    // let output = AesEcb128::decrypt(key, None, re_enc.as_slice())?;
     println!("Plain text: {}", String::from_utf8(output)?);
     Ok(())
 }

@@ -1,4 +1,5 @@
 use anyhow::Result;
+use cryptopals::aes::{AesCbc128, AesEcb128, Cipher};
 use cryptopals::buffer::*;
 use cryptopals::decode_b64_file;
 use cryptopals::xorcrypt::*;
@@ -86,4 +87,25 @@ fn test_pkcs7() {
         println!("{:?}", stripped);
         assert_eq!(input, stripped);
     }
+}
+
+#[test]
+fn test_aes_ecb() -> Result<()> {
+    let ciphertext = decode_b64_file("inputs/s1c7.txt")?;
+    let key = b"YELLOW SUBMARINE";
+    let plaintext = AesEcb128::decrypt(key, None, &ciphertext)?;
+    let reencrypted = AesEcb128::encrypt(key, None, &plaintext)?;
+    assert_eq!(reencrypted, ciphertext);
+    Ok(())
+}
+
+#[test]
+fn test_aes_cbc() -> Result<()> {
+    let ciphertext = decode_b64_file("inputs/s1c7.txt")?;
+    let key = b"YELLOW SUBMARINE";
+    let iv = vec![0; 16];
+    let plaintext = AesCbc128::decrypt(key, Some(&iv), &ciphertext)?;
+    let reencrypted = AesCbc128::encrypt(key, Some(&iv), &plaintext)?;
+    assert_eq!(reencrypted, ciphertext);
+    Ok(())
 }
