@@ -52,7 +52,7 @@ pub fn test_freq_rank() -> Result<()> {
 #[test]
 pub fn test_repeat_key_xor() -> Result<()> {
     assert_eq!(
-        "Burning 'em, if you ain't quick and nimble\nI go crazy when I hear a cymbal".bytes().collect::<Vec<u8>>().repeat_key_xor("ICE").hex_encode(),
+        "Burning 'em, if you ain't quick and nimble\nI go crazy when I hear a cymbal".repeat_key_xor("ICE").hex_encode(),
         "0b3637272a2b2e63622c2e69692a23693a2a3c6324202d623d63343c2a26226324272765272a282b2f20430a652e2c652a3124333a653e2b2027630c692b20283165286326302e27282f");
     Ok(())
 }
@@ -61,16 +61,16 @@ pub fn test_repeat_key_xor() -> Result<()> {
 pub fn test_hamming_distance() -> Result<()> {
     let str1 = "this is a test";
     let str2 = "wokka wokka!!!";
-    assert_eq!(str1.hamming_distance(&str2).unwrap(), 37);
+    assert_eq!(str1.hamming_distance(&str2)?, 37);
     Ok(())
 }
 
 #[test]
 pub fn test_vigenere() -> Result<()> {
     let cipherblob = decode_b64_file("inputs/s1c6.txt")?;
-    let guessed_key = String::from_utf8(cipherblob.guess_vigenere()?).unwrap();
-    let plainblob = cipherblob.repeat_key_xor(guessed_key.as_str());
-    let reconstructed = plainblob.repeat_key_xor(guessed_key.as_str());
+    let guessed_key = cipherblob.guess_vigenere()?;
+    let plainblob = cipherblob.repeat_key_xor(&guessed_key);
+    let reconstructed = plainblob.repeat_key_xor(&guessed_key);
     assert_eq!(cipherblob, reconstructed);
     Ok(())
 }

@@ -13,7 +13,7 @@ const PRINTABLE_ASCII: [char; 95] = [
 pub trait XORCrypto {
     fn xor(&self, rhs: &Self) -> Result<Vec<u8>>;
     fn single_key_xor(&self, key: char) -> Vec<u8>;
-    fn repeat_key_xor(&self, key: &str) -> Vec<u8>;
+    fn repeat_key_xor(&self, key: &Self) -> Vec<u8>;
     fn guess_xor_key(&self) -> Result<(char, f32)>;
     fn guess_vigenere(&self) -> Result<Vec<u8>>;
 }
@@ -39,8 +39,9 @@ impl<T: ?Sized + AsRef<[u8]>> XORCrypto for T {
             .collect::<Vec<u8>>()
     }
 
-    fn repeat_key_xor(&self, key: &str) -> Vec<u8> {
-        key.bytes()
+    fn repeat_key_xor(&self, key: &Self) -> Vec<u8> {
+        key.as_ref()
+            .iter()
             .cycle()
             .zip(self.as_ref().iter())
             .map(|(k, d)| k ^ d)

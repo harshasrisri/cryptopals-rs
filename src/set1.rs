@@ -88,12 +88,10 @@ fn repeat_key_xor() {
 
 fn break_repeat_key_xor() -> Result<()> {
     let input = decode_b64_file("inputs/s1c6.txt")?;
-    let guessed_key = String::from_utf8(input.guess_vigenere()?)?;
-    println!("Vigenere Key: {}", guessed_key);
-    println!(
-        "Plain text: {}",
-        String::from_utf8(input.repeat_key_xor(guessed_key.as_str()))?
-    );
+    let guessed_key = input.guess_vigenere()?;
+    let plainblob = input.repeat_key_xor(&guessed_key);
+    println!("Vigenere Key: \'{}\'", String::from_utf8(guessed_key)?);
+    println!("Plaintext:\n{}", String::from_utf8(plainblob)?);
     Ok(())
 }
 
