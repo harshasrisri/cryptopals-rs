@@ -1,3 +1,4 @@
+use crate::buffer::Encoding;
 use crate::xorcrypt::XORCrypto;
 use anyhow::Result;
 use openssl::symm::{Cipher as oCipher, Crypter, Mode};
@@ -109,5 +110,46 @@ impl Cipher for AesCbc128 {
             .flatten()
             .collect();
         Ok(res)
+    }
+}
+
+pub struct AesRand128;
+
+use rand::Rng;
+
+impl Cipher for AesRand128 {
+    const BLOCK_SIZE: usize = 16;
+
+    fn encrypt(_key: &[u8], _iv: Option<&[u8]>, data: &[u8]) -> Result<Vec<u8>> {
+        let key = std::iter::repeat_with(rand::random)
+            .take(Self::BLOCK_SIZE)
+            .collect::<Vec<u8>>();
+
+        let data = {
+            let mut rng = rand::thread_rng();
+
+            std::iter::repeat_with(rand::random)
+                .take(rng.gen_range(5, 11))
+                .chain(data.iter().copied())
+                .chain(std::iter::repeat_with(rand::random).take(rng.gen_range(5, 11)))
+                .collect::<Vec<u8>>()
+        };
+
+        println!("{:#?}", data);
+
+        if rand::random() {
+            println!("Encrypting in AesEcb128 using {}", key.hex_encode());
+            AesEcb128::encrypt(&key, None, &data)
+        } else {
+            println!("Encrypting in AesCbc128 using {}", key.hex_encode());
+            let iv = std::iter::repeat_with(rand::random)
+                .take(Self::BLOCK_SIZE)
+                .collect::<Vec<u8>>();
+            AesCbc128::encrypt(&key, Some(&iv), &data)
+        }
+    }
+
+    fn decrypt(_key: &[u8], _iv: Option<&[u8]>, _data: &[u8]) -> Result<Vec<u8>> {
+        unimplemented!()
     }
 }

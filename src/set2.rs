@@ -1,11 +1,11 @@
 use crate::CryptopalArgs;
 use anyhow::Result;
-use cryptopals::aes::{AesCbc128, Cipher};
+use cryptopals::aes::{AesCbc128, AesRand128, Cipher};
 // use cryptopals::aes::O_AesCbc128;
 use cryptopals::buffer::*;
 use cryptopals::decode_b64_file;
 
-fn pkcs7padding() -> Result<()> {
+fn pkcs7_padding() -> Result<()> {
     let input = "YELLOW SUBMARINE".to_owned().into_bytes();
     println!(
         "input    - \"{}\" : {:?}",
@@ -32,8 +32,8 @@ fn pkcs7padding() -> Result<()> {
     Ok(())
 }
 
-fn implement_cbc() -> Result<()> {
-    let iv = vec![0; 16];
+fn decrypt_cbc() -> Result<()> {
+    let iv = vec![0; AesCbc128::BLOCK_SIZE];
     let key = b"YELLOW SUBMARINE";
     let input = decode_b64_file("inputs/s2c2.txt")?;
     let output = AesCbc128::decrypt(key, Some(iv.as_slice()), input.as_slice())?;
@@ -43,10 +43,21 @@ fn implement_cbc() -> Result<()> {
     Ok(())
 }
 
+fn ecb_cbc_oracle() -> Result<()> {
+    let input = {
+        let iv = [0; AesCbc128::BLOCK_SIZE];
+        let ciphertext = decode_b64_file("inputs/s2c2.txt")?;
+        AesCbc128::decrypt(b"YELLOW SUBMARINE", Some(&iv), &ciphertext)?
+    };
+    let _enc_data = AesRand128::encrypt(vec![].as_slice(), None, &input)?;
+    unimplemented!()
+}
+
 pub fn run(args: &CryptopalArgs) -> Result<()> {
     match args.challenge {
-        1 => pkcs7padding()?,
-        2 => implement_cbc()?,
+        1 => pkcs7_padding()?,
+        2 => decrypt_cbc()?,
+        3 => ecb_cbc_oracle()?,
         _ => anyhow::bail!(
             "Challenge {} doesn't exist in set {}",
             args.challenge,
