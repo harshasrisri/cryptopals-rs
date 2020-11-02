@@ -1,5 +1,6 @@
 use crate::xorcrypt::XORCrypto;
 use anyhow::Result;
+use rand::Rng;
 use std::collections::HashMap;
 
 #[rustfmt::skip]
@@ -19,6 +20,7 @@ pub trait BufferOps {
     fn freq_rank(&self) -> f32;
     fn hamming_distance(&self, rhs: &Self) -> Result<u32>;
     fn matrixify(&self, cols: usize) -> Vec<&[u8]>;
+    fn pad_with_random(&self) -> Vec<u8>;
 }
 
 impl<T: ?Sized + AsRef<[u8]>> BufferOps for T {
@@ -39,6 +41,16 @@ impl<T: ?Sized + AsRef<[u8]>> BufferOps for T {
 
     fn matrixify(&self, cols: usize) -> Vec<&[u8]> {
         self.as_ref().chunks_exact(cols).collect()
+    }
+
+    fn pad_with_random(&self) -> Vec<u8> {
+        let mut rng = rand::thread_rng();
+
+        std::iter::repeat_with(rand::random)
+            .take(rng.gen_range(5, 11))
+            .chain(self.as_ref().iter().copied())
+            .chain(std::iter::repeat_with(rand::random).take(rng.gen_range(5, 11)))
+            .collect::<Vec<u8>>()
     }
 }
 

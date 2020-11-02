@@ -41,3 +41,7 @@ where
         .collect();
     Ok(res)
 }
+
+pub fn gen_rand_key(key_len: usize) -> Vec<u8> {
+    std::iter::repeat_with(rand::random).take(key_len).collect()
+}
