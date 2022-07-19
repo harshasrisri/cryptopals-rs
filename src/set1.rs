@@ -10,11 +10,11 @@ use std::io::{BufRead, BufReader};
 
 fn hex2b64() -> Result<()> {
     let input =  "49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d";
-    let output = input.hex_decode()?;
+    let output = input.decode::<Hex>()?;
     println!(
         "hex2b64({}) = {} ({})",
         input,
-        output.b64_encode(),
+        output.encode::<Base64>(),
         String::from_utf8(output)?
     );
     Ok(())
@@ -25,9 +25,9 @@ fn fixed_xor() -> Result<()> {
     let input2 = "686974207468652062756c6c277320657965";
     print!("fixed_xor({}, {}) = ", input1, input2);
 
-    let input1 = input1.hex_decode()?;
-    let input2 = input2.hex_decode()?;
-    println!("{}", input1.xor(&input2)?.hex_encode());
+    let input1 = input1.decode::<Hex>()?;
+    let input2 = input2.decode::<Hex>()?;
+    println!("{}", input1.xor(&input2)?.encode::<Hex>());
     Ok(())
 }
 
@@ -35,7 +35,7 @@ fn single_byte_xor() -> Result<()> {
     let input = "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736";
     print!("single_byte_xor({}) = ", input);
 
-    let input = input.hex_decode()?;
+    let input = input.decode::<Hex>()?;
     let (guess, freq_rank) = input.guess_xor_key()?;
     println!(
         "{} ({}) ({})",
@@ -56,7 +56,7 @@ fn detect_single_char_xor() -> Result<()> {
         .lines()
         .filter_map(std::result::Result::ok)
     {
-        let line = line.hex_decode()?;
+        let line = line.decode::<Hex>()?;
         let (guess, freq) = line.guess_xor_key()?;
         if freq > max_rank {
             max_rank = freq;
@@ -82,7 +82,7 @@ fn repeat_key_xor() {
         "-\n{}\n-\nAbove text repeatedly XOR'ed with the key {} is:\n{}",
         input,
         key,
-        input.repeat_key_xor("ICE").hex_encode()
+        input.repeat_key_xor("ICE").encode::<Hex>()
     );
 }
 
@@ -112,7 +112,7 @@ fn detect_aes_ecb() -> Result<()> {
         .filter_map(|line| line.ok())
         .enumerate()
     {
-        let line = line.hex_decode()?;
+        let line = line.decode::<Hex>()?;
         let chunks = line.chunks(16);
         if line.len() / 16 != chunks.collect::<HashSet<_>>().len() {
             println!("ECB detected on line number {}", i);

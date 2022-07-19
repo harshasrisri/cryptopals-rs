@@ -54,13 +54,11 @@ fn ecb_cbc_oracle() -> Result<()> {
     let _enc_data = {
         let key = cryptopals::gen_rand_key(AesCbc128::BLOCK_SIZE);
         if ecb {
-            println!("Encrypting in AesEcb128 using {}", key.hex_encode());
+            println!("Encrypting in AesEcb128 using {}", key.encode::<Hex>());
             AesEcb128::encrypt(&key, None, &input)
         } else {
-            println!("Encrypting in AesCbc128 using {}", key.hex_encode());
-            let iv = std::iter::repeat_with(rand::random)
-                .take(AesCbc128::BLOCK_SIZE)
-                .collect::<Vec<u8>>();
+            println!("Encrypting in AesCbc128 using {}", key.encode::<Hex>());
+            let iv = cryptopals::gen_rand_key(AesCbc128::BLOCK_SIZE);
             AesCbc128::encrypt(&key, Some(&iv), &input)
         }
     };

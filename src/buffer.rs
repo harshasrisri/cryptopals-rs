@@ -54,33 +54,45 @@ impl<T: ?Sized + AsRef<[u8]>> BufferOps for T {
     }
 }
 
-pub trait Encoding {
-    fn b64_encode(&self) -> String;
-    fn hex_encode(&self) -> String;
+pub trait EncoDecode {
+    fn encode<E: Encoder>(&self) -> String where Self: AsRef<[u8]> { E::encode(self) }
+    fn decode<D: Decoder>(&self) -> Result<Vec<u8>> where Self: AsRef<[u8]> { Ok(D::decode(self)?) }
 }
 
-impl<T: ?Sized + AsRef<[u8]>> Encoding for T {
-    fn b64_encode(&self) -> String {
-        base64::encode(&self)
-    }
+impl<T: AsRef<[u8]>> EncoDecode for T {}
 
-    fn hex_encode(&self) -> String {
-        hex::encode(&self)
+pub struct Hex;
+pub struct Base64;
+
+pub trait Encoder {
+    fn encode<T: AsRef<[u8]>>(data: T) -> String;
+}
+
+pub trait Decoder {
+    fn decode<T: AsRef<[u8]>>(data: T) -> Result<Vec<u8>>;
+}
+
+impl Encoder for Hex {
+    fn encode<T: AsRef<[u8]>>(data: T) -> String {
+        hex::encode(data)
     }
 }
 
-pub trait Decoding {
-    fn b64_decode(&self) -> Result<Vec<u8>>;
-    fn hex_decode(&self) -> Result<Vec<u8>>;
+impl Decoder for Hex {
+    fn decode<T: AsRef<[u8]>>(data: T) -> Result<Vec<u8>> {
+        Ok(hex::decode(data)?)
+    }
 }
 
-impl<T: ?Sized + AsRef<[u8]>> Decoding for T {
-    fn b64_decode(&self) -> Result<Vec<u8>> {
-        Ok(base64::decode(self)?)
+impl Encoder for Base64 {
+    fn encode<T: AsRef<[u8]>>(data: T) -> String {
+        base64::encode(&data)
     }
+}
 
-    fn hex_decode(&self) -> Result<Vec<u8>> {
-        Ok(hex::decode(self)?)
+impl Decoder for Base64 {
+    fn decode<T: AsRef<[u8]>>(data: T) -> Result<Vec<u8>> {
+        Ok(base64::decode(&data)?)
     }
 }
 

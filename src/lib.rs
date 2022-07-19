@@ -2,8 +2,9 @@ pub mod aes;
 pub mod buffer;
 pub mod xorcrypt;
 
-use crate::buffer::Decoding;
+use crate::buffer::*;
 use anyhow::Result;
+use buffer::Base64;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::Path;
@@ -36,7 +37,7 @@ where
     let res = BufReader::new(input)
         .lines()
         .filter_map(std::result::Result::ok)
-        .flat_map(|line| line.b64_decode())
+        .flat_map(|line| line.decode::<Base64>())
         .flatten()
         .collect();
     Ok(res)
