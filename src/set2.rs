@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use crate::CryptopalArgs;
 use anyhow::Result;
 use cryptopals::aes::{AesCbc128, AesEcb128, Cipher};
@@ -50,19 +52,29 @@ fn ecb_cbc_oracle() -> Result<()> {
     }
     .pad_with_random();
 
-    let ecb = rand::random();
-    let _enc_data = {
+    let use_ecb = rand::random();
+    let enc_data = {
         let key = cryptopals::gen_rand_key(AesCbc128::BLOCK_SIZE);
-        if ecb {
-            println!("Encrypting in AesEcb128 using {}", key.encode::<Hex>());
+        if use_ecb {
+            println!("Encrypting in Aes-ECB-128 using {}", key.encode::<Hex>());
             AesEcb128::encrypt(&key, None, &input)
         } else {
-            println!("Encrypting in AesCbc128 using {}", key.encode::<Hex>());
+            println!("Encrypting in Aes-CBC-128 using {}", key.encode::<Hex>());
             let iv = cryptopals::gen_rand_key(AesCbc128::BLOCK_SIZE);
             AesCbc128::encrypt(&key, Some(&iv), &input)
         }
-    };
-    unimplemented!()
+    }?;
+
+    let chunks = enc_data.chunks(16);
+    let ecb_detected = enc_data.len() / 16 != chunks.collect::<HashSet<_>>().len();
+
+    if use_ecb ^ ecb_detected {
+        println!("FAIL! use_ecb = {use_ecb}. ecb_detected = {ecb_detected}");
+    } else {
+        println!("PASS! use_ecb = {use_ecb}. ecb_detected = {ecb_detected}");
+    }
+
+    Ok(())
 }
 
 pub fn run(args: &CryptopalArgs) -> Result<()> {
