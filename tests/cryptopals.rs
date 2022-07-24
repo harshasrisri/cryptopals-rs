@@ -1,5 +1,5 @@
 use anyhow::Result;
-use cryptopals::aes::{AesCbc128, AesEcb128, Cipher};
+use cryptopals::aes::{AesCbc128, AesEcb128, AesEcb256, Cipher, AesCbc256};
 use cryptopals::buffer::*;
 use cryptopals::decode_b64_file;
 use cryptopals::xorcrypt::*;
@@ -90,22 +90,55 @@ fn test_pkcs7() {
 }
 
 #[test]
-fn test_aes_ecb() -> Result<()> {
+fn test_aes_ecb_128() -> Result<()> {
     let ciphertext = decode_b64_file("inputs/s1c7.txt")?;
     let key = b"YELLOW SUBMARINE";
     let plaintext = AesEcb128::decrypt(key, None, &ciphertext)?;
+    assert!(String::from_utf8(plaintext.clone()).is_ok(), "Error converting plaintext to String");
     let reencrypted = AesEcb128::encrypt(key, None, &plaintext)?;
     assert_eq!(reencrypted, ciphertext);
     Ok(())
 }
 
 #[test]
-fn test_aes_cbc() -> Result<()> {
+fn test_aes_ecb_256() -> Result<()> {
     let ciphertext = decode_b64_file("inputs/s1c7.txt")?;
+    let key = b"YELLOW SUBMARINE";
+    let plaintext = AesEcb128::decrypt(key, None, &ciphertext)?;
+
+    let key = b"32 byte key for YELLOW SUBMARINE";
+    let ciphertext = AesEcb256::encrypt(key, None, &plaintext)?;
+    let decrypted = AesEcb256::decrypt(key, None, &ciphertext)?;
+    assert_eq!(plaintext, decrypted);
+    assert!(String::from_utf8(decrypted).is_ok(), "Error converting decrypted text to String");
+    
+    Ok(())
+}
+
+#[test]
+fn test_aes_cbc_128() -> Result<()> {
+    let ciphertext = decode_b64_file("inputs/s2c2.txt")?;
     let key = b"YELLOW SUBMARINE";
     let iv = vec![0; 16];
     let plaintext = AesCbc128::decrypt(key, Some(&iv), &ciphertext)?;
+    assert!(String::from_utf8(plaintext.clone()).is_ok(), "Error converting plaintext to String");
     let reencrypted = AesCbc128::encrypt(key, Some(&iv), &plaintext)?;
     assert_eq!(reencrypted, ciphertext);
+    Ok(())
+}
+
+#[test]
+fn test_aes_cbc_256() -> Result<()> {
+    let ciphertext = decode_b64_file("inputs/s2c2.txt")?;
+    let key = b"YELLOW SUBMARINE";
+    let iv = vec![0; 16];
+    let plaintext = AesCbc256::decrypt(key, Some(&iv), &ciphertext)?;
+
+    let key = b"32 byte key for YELLOW SUBMARINE";
+    let ciphertext = AesCbc256::encrypt(key, Some(&iv), &plaintext)?;
+    let decrypted = AesCbc256::decrypt(key, Some(&iv), &ciphertext)?;
+    assert_eq!(plaintext, decrypted);
+    assert!(String::from_utf8(decrypted).is_ok(), "Error converting decrypted text to String");
+
     Ok(())
 }

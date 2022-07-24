@@ -1,20 +1,34 @@
 use crate::xorcrypt::XORCrypto;
-use anyhow::Result;
+use anyhow::{Result, bail, ensure};
 use openssl::symm::{Cipher as oCipher, Crypter, Mode};
 
 pub trait Cipher {
-    const BLOCK_SIZE: usize;
+    const BLOCK_SIZE: usize = 16;
     fn encrypt(key: &[u8], iv: Option<&[u8]>, data: &[u8]) -> Result<Vec<u8>>;
     fn decrypt(key: &[u8], iv: Option<&[u8]>, data: &[u8]) -> Result<Vec<u8>>;
 }
 
-pub struct AesEcb128;
+pub struct AesEcb<const N: usize>;
+pub struct AesCbc<const N: usize>;
 
-impl Cipher for AesEcb128 {
-    const BLOCK_SIZE: usize = 16;
+pub type AesEcb128 = AesEcb<128>;
+pub type AesEcb256 = AesEcb<256>;
 
+pub type AesCbc128 = AesCbc<128>;
+pub type AesCbc256 = AesCbc<256>;
+
+impl<const N: usize> Cipher for AesEcb<N> {
     fn encrypt(key: &[u8], _iv: Option<&[u8]>, data: &[u8]) -> Result<Vec<u8>> {
-        let mut crypter = Crypter::new(oCipher::aes_128_ecb(), Mode::Encrypt, key, None)?;
+        ensure!(key.len() * 8 == N, "Unexpected key length {} for AES-{}", key.len() * 8, N);
+
+        let cipher_engine = match N {
+            128 => oCipher::aes_128_ecb(),
+            256 => oCipher::aes_256_ecb(),
+            _ => bail!("Unhandled key length"),
+        };
+
+        let mut crypter = Crypter::new(cipher_engine, Mode::Encrypt, key, None)?;
+
         let res = data
             .chunks(Self::BLOCK_SIZE)
             .map(|plaintext| {
@@ -33,7 +47,16 @@ impl Cipher for AesEcb128 {
     }
 
     fn decrypt(key: &[u8], _iv: Option<&[u8]>, data: &[u8]) -> Result<Vec<u8>> {
-        let mut crypter = Crypter::new(oCipher::aes_128_ecb(), Mode::Decrypt, key, None)?;
+        ensure!(key.len() * 8 == N, "Unexpected key length {} for AES-{}", key.len() * 8, N);
+
+        let cipher_engine = match N {
+            128 => oCipher::aes_128_ecb(),
+            256 => oCipher::aes_256_ecb(),
+            _ => bail!("Unhandled Block Size"),
+        };
+
+        let mut crypter = Crypter::new(cipher_engine, Mode::Decrypt, key, None)?;
+
         let res = data
             .chunks(Self::BLOCK_SIZE)
             .map(|ciphertext| {
@@ -51,15 +74,20 @@ impl Cipher for AesEcb128 {
     }
 }
 
-pub struct AesCbc128;
-
-impl Cipher for AesCbc128 {
-    const BLOCK_SIZE: usize = 16;
-
+impl<const N: usize> Cipher for AesCbc<N> {
     fn encrypt(key: &[u8], iv: Option<&[u8]>, data: &[u8]) -> Result<Vec<u8>> {
-        anyhow::ensure!(iv.is_some(), "IV is required for this cipher");
+        ensure!(key.len() * 8 == N, "Unexpected key length {} for AES-{}", key.len() * 8, N);
+        ensure!(iv.is_some(), "IV is required for this cipher");
+
+        let cipher_engine = match N {
+            128 => oCipher::aes_128_cbc(),
+            256 => oCipher::aes_256_cbc(),
+            _ => bail!("Unhandled Block Size"),
+        };
+
+        let mut crypter = Crypter::new(cipher_engine, Mode::Encrypt, key, iv)?;
         let mut iv = iv.unwrap().to_vec();
-        let mut crypter = Crypter::new(oCipher::aes_128_ecb(), Mode::Encrypt, key, None)?;
+
         let res = data
             .chunks(Self::BLOCK_SIZE)
             .map(|chunk| {
@@ -83,9 +111,18 @@ impl Cipher for AesCbc128 {
     }
 
     fn decrypt(key: &[u8], iv: Option<&[u8]>, data: &[u8]) -> Result<Vec<u8>> {
-        anyhow::ensure!(iv.is_some(), "IV is required for this cipher");
+        ensure!(key.len() * 8 == N, "Unexpected key length {} for AES-{}", key.len() * 8, N);
+        ensure!(iv.is_some(), "IV is required for this cipher");
+
+        let cipher_engine = match N {
+            128 => oCipher::aes_128_cbc(),
+            256 => oCipher::aes_256_cbc(),
+            _ => bail!("Unhandled Block Size"),
+        };
+
+        let mut crypter = Crypter::new(cipher_engine, Mode::Decrypt, key, iv)?;
         let iv = iv.unwrap();
-        let mut crypter = Crypter::new(oCipher::aes_128_ecb(), Mode::Decrypt, key, None)?;
+
         let res = iv
             .chunks(Self::BLOCK_SIZE)
             .take(1)
