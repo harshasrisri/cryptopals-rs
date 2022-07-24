@@ -21,7 +21,7 @@ where
     for i in 0..input[0].as_ref().len() {
         let mut col = Vec::new();
         for row in input {
-            col.push(row.as_ref()[i].clone());
+            col.push(row[i].clone());
         }
         trans.push(col);
     }

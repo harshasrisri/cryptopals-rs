@@ -31,7 +31,7 @@ impl<T: ?Sized + AsRef<[u8]>> BufferOps for T {
     fn freq_rank(&self) -> f32 {
         self.as_ref()
             .iter()
-            .map(|x| ETAOIN_SHRDLU.get(&x).unwrap_or(&0.0))
+            .map(|x| ETAOIN_SHRDLU.get(x).unwrap_or(&0.0))
             .sum()
     }
 
@@ -55,8 +55,18 @@ impl<T: ?Sized + AsRef<[u8]>> BufferOps for T {
 }
 
 pub trait EncoDecode {
-    fn encode<E: Encoder>(&self) -> String where Self: AsRef<[u8]> { E::encode(self) }
-    fn decode<D: Decoder>(&self) -> Result<Vec<u8>> where Self: AsRef<[u8]> { Ok(D::decode(self)?) }
+    fn encode<E: Encoder>(&self) -> String
+    where
+        Self: AsRef<[u8]>,
+    {
+        E::encode(self)
+    }
+    fn decode<D: Decoder>(&self) -> Result<Vec<u8>>
+    where
+        Self: AsRef<[u8]>,
+    {
+        D::decode(self)
+    }
 }
 
 impl<T: AsRef<[u8]>> EncoDecode for T {}

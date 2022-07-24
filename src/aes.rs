@@ -1,5 +1,5 @@
 use crate::xorcrypt::XORCrypto;
-use anyhow::{Result, bail, ensure};
+use anyhow::{bail, ensure, Result};
 use openssl::symm::{Cipher as oCipher, Crypter, Mode};
 
 pub trait Cipher {
@@ -19,7 +19,12 @@ pub type AesCbc256 = AesCbc<256>;
 
 impl<const N: usize> Cipher for AesEcb<N> {
     fn encrypt(key: &[u8], _iv: Option<&[u8]>, data: &[u8]) -> Result<Vec<u8>> {
-        ensure!(key.len() * 8 == N, "Unexpected key length {} for AES-{}", key.len() * 8, N);
+        ensure!(
+            key.len() * 8 == N,
+            "Unexpected key length {} for AES-{}",
+            key.len() * 8,
+            N
+        );
 
         let cipher_engine = match N {
             128 => oCipher::aes_128_ecb(),
@@ -34,7 +39,7 @@ impl<const N: usize> Cipher for AesEcb<N> {
             .map(|plaintext| {
                 let mut plaintext = plaintext.to_vec();
                 plaintext.resize_with(Self::BLOCK_SIZE, Default::default);
-                let mut ciphertext = vec![0 as u8; Self::BLOCK_SIZE * 2];
+                let mut ciphertext = vec![0_u8; Self::BLOCK_SIZE * 2];
                 let _size = crypter.update(&plaintext, &mut ciphertext)?;
                 ciphertext.truncate(Self::BLOCK_SIZE);
                 Ok(ciphertext)
@@ -47,7 +52,12 @@ impl<const N: usize> Cipher for AesEcb<N> {
     }
 
     fn decrypt(key: &[u8], _iv: Option<&[u8]>, data: &[u8]) -> Result<Vec<u8>> {
-        ensure!(key.len() * 8 == N, "Unexpected key length {} for AES-{}", key.len() * 8, N);
+        ensure!(
+            key.len() * 8 == N,
+            "Unexpected key length {} for AES-{}",
+            key.len() * 8,
+            N
+        );
 
         let cipher_engine = match N {
             128 => oCipher::aes_128_ecb(),
@@ -62,7 +72,7 @@ impl<const N: usize> Cipher for AesEcb<N> {
             .map(|ciphertext| {
                 let mut ciphertext = ciphertext.to_vec();
                 ciphertext.resize_with(Self::BLOCK_SIZE, Default::default);
-                let mut plaintext = vec![0 as u8; Self::BLOCK_SIZE * 2];
+                let mut plaintext = vec![0_u8; Self::BLOCK_SIZE * 2];
                 let size = crypter.update(&ciphertext, &mut plaintext)?;
                 Ok(plaintext[size..size + Self::BLOCK_SIZE].to_vec())
             })
@@ -76,7 +86,12 @@ impl<const N: usize> Cipher for AesEcb<N> {
 
 impl<const N: usize> Cipher for AesCbc<N> {
     fn encrypt(key: &[u8], iv: Option<&[u8]>, data: &[u8]) -> Result<Vec<u8>> {
-        ensure!(key.len() * 8 == N, "Unexpected key length {} for AES-{}", key.len() * 8, N);
+        ensure!(
+            key.len() * 8 == N,
+            "Unexpected key length {} for AES-{}",
+            key.len() * 8,
+            N
+        );
         ensure!(iv.is_some(), "IV is required for this cipher");
 
         let cipher_engine = match N {
@@ -94,7 +109,7 @@ impl<const N: usize> Cipher for AesCbc<N> {
                 let mut plaintext = chunk.to_vec();
                 plaintext.resize_with(Self::BLOCK_SIZE, Default::default);
                 let interim = iv.xor(&plaintext)?;
-                let mut ciphertext = vec![0 as u8; Self::BLOCK_SIZE * 2];
+                let mut ciphertext = vec![0_u8; Self::BLOCK_SIZE * 2];
                 let _size = crypter.update(&interim, &mut ciphertext)?;
                 ciphertext.truncate(Self::BLOCK_SIZE);
                 iv.copy_from_slice(&ciphertext);
@@ -108,7 +123,12 @@ impl<const N: usize> Cipher for AesCbc<N> {
     }
 
     fn decrypt(key: &[u8], iv: Option<&[u8]>, data: &[u8]) -> Result<Vec<u8>> {
-        ensure!(key.len() * 8 == N, "Unexpected key length {} for AES-{}", key.len() * 8, N);
+        ensure!(
+            key.len() * 8 == N,
+            "Unexpected key length {} for AES-{}",
+            key.len() * 8,
+            N
+        );
         ensure!(iv.is_some(), "IV is required for this cipher");
 
         let cipher_engine = match N {
@@ -130,7 +150,7 @@ impl<const N: usize> Cipher for AesCbc<N> {
                 let iv = window[0].to_vec();
                 let mut ciphertext = window[1].to_vec();
                 ciphertext.resize_with(Self::BLOCK_SIZE, Default::default);
-                let mut interim = vec![0 as u8; Self::BLOCK_SIZE * 2];
+                let mut interim = vec![0_u8; Self::BLOCK_SIZE * 2];
                 let size = crypter.update(&ciphertext, &mut interim)?;
                 let plaintext = iv.as_slice().xor(&interim[size..size + Self::BLOCK_SIZE])?;
                 Ok(plaintext)

@@ -2,7 +2,7 @@
 name = "cryptopals"
 version = "0.1.0"
 authors = ["Sriharsha Mucheli <harshasrisri@gmail.com>"]
-edition = "2018"
+edition = "2021"
 description = "Computer Security Challenges from www.cryptopals.com solved using Rust"
 
 [dependencies]

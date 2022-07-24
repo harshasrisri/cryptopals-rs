@@ -81,7 +81,7 @@ impl<T: ?Sized + AsRef<[u8]>> XORCrypto for T {
                         .collect::<Vec<_>>();
                     for i in 0..NUM_CHUNKS_VIGENERE {
                         for j in i..NUM_CHUNKS_VIGENERE {
-                            hamming_distance += chunks[i].hamming_distance(&chunks[j]).unwrap();
+                            hamming_distance += chunks[i].hamming_distance(chunks[j]).unwrap();
                         }
                     }
                     (
