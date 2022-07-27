@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 use crate::CryptopalArgs;
-use anyhow::Result;
+use anyhow::{Result, bail};
 use cryptopals::aes::{AesCbc128, AesMode, Cipher, Oracle};
 use cryptopals::buffer::*;
 use cryptopals::decode_b64_file;
@@ -36,7 +36,7 @@ fn pkcs7_padding() -> Result<()> {
 fn decrypt_cbc() -> Result<()> {
     let iv = vec![0; AesCbc128::BLOCK_SIZE];
     let key = b"YELLOW SUBMARINE";
-    let input = decode_b64_file("inputs/s2c2.txt")?;
+    let input = decode_b64_file("inputs/c10.txt")?;
     let output = AesCbc128::decrypt(key, Some(iv.as_slice()), input.as_slice())?;
 
     println!("CBC decrypted output:");
@@ -47,7 +47,7 @@ fn decrypt_cbc() -> Result<()> {
 fn ecb_cbc_oracle() -> Result<()> {
     let input = {
         let iv = [0; AesCbc128::BLOCK_SIZE];
-        let ciphertext = decode_b64_file("inputs/s2c2.txt")?;
+        let ciphertext = decode_b64_file("inputs/c12.txt")?;
         AesCbc128::decrypt(b"YELLOW SUBMARINE", Some(&iv), &ciphertext)?
     }
     .pad_with_random();
@@ -72,14 +72,10 @@ fn ecb_cbc_oracle() -> Result<()> {
 
 pub fn run(args: &CryptopalArgs) -> Result<()> {
     match args.challenge {
-        1 => pkcs7_padding()?,
-        2 => decrypt_cbc()?,
-        3 => ecb_cbc_oracle()?,
-        _ => anyhow::bail!(
-            "Challenge {} doesn't exist in set {}",
-            args.challenge,
-            args.set
-        ),
+        9 => pkcs7_padding()?,
+        10 => decrypt_cbc()?,
+        11 => ecb_cbc_oracle()?,
+        _n => bail!("Challenge {n} doesn't exist in set 2"),
     };
 
     Ok(())

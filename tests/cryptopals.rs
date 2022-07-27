@@ -67,7 +67,7 @@ pub fn test_hamming_distance() -> Result<()> {
 
 #[test]
 pub fn test_vigenere() -> Result<()> {
-    let cipherblob = decode_b64_file("inputs/s1c6.txt")?;
+    let cipherblob = decode_b64_file("inputs/c6.txt")?;
     let guessed_key = cipherblob.guess_vigenere()?;
     let plainblob = cipherblob.repeat_key_xor(&guessed_key);
     let reconstructed = plainblob.repeat_key_xor(&guessed_key);
@@ -91,7 +91,7 @@ fn test_pkcs7() {
 
 #[test]
 fn test_aes_ecb_128() -> Result<()> {
-    let ciphertext = decode_b64_file("inputs/s1c7.txt")?;
+    let ciphertext = decode_b64_file("inputs/c7.txt")?;
     let key = b"YELLOW SUBMARINE";
     let plaintext = AesEcb128::decrypt(key, None, &ciphertext)?;
     assert!(
@@ -105,7 +105,7 @@ fn test_aes_ecb_128() -> Result<()> {
 
 #[test]
 fn test_aes_ecb_256() -> Result<()> {
-    let ciphertext = decode_b64_file("inputs/s1c7.txt")?;
+    let ciphertext = decode_b64_file("inputs/c7.txt")?;
     let key = b"YELLOW SUBMARINE";
     let plaintext = AesEcb128::decrypt(key, None, &ciphertext)?;
 
@@ -123,7 +123,7 @@ fn test_aes_ecb_256() -> Result<()> {
 
 #[test]
 fn test_aes_cbc_128() -> Result<()> {
-    let ciphertext = decode_b64_file("inputs/s2c2.txt")?;
+    let ciphertext = decode_b64_file("inputs/c10.txt")?;
     let key = b"YELLOW SUBMARINE";
     let iv = vec![0; 16];
     let plaintext = AesCbc128::decrypt(key, Some(&iv), &ciphertext)?;
@@ -138,7 +138,7 @@ fn test_aes_cbc_128() -> Result<()> {
 
 #[test]
 fn test_aes_cbc_256() -> Result<()> {
-    let ciphertext = decode_b64_file("inputs/s2c2.txt")?;
+    let ciphertext = decode_b64_file("inputs/c10.txt")?;
     let key = b"YELLOW SUBMARINE";
     let iv = vec![0; 16];
     let plaintext = AesCbc128::decrypt(key, Some(&iv), &ciphertext)?;

@@ -1,5 +1,5 @@
 use crate::CryptopalArgs;
-use anyhow::Result;
+use anyhow::{Result, bail};
 use cryptopals::aes::{AesEcb128, Cipher};
 use cryptopals::buffer::*;
 use cryptopals::decode_b64_file;
@@ -47,7 +47,7 @@ fn single_byte_xor() -> Result<()> {
 }
 
 fn detect_single_char_xor() -> Result<()> {
-    let input = "inputs/s1c4.txt";
+    let input = "inputs/c4.txt";
     println!("input file: {}", input);
     let input = File::open(input)?;
     let mut max_rank = 0.0;
@@ -67,7 +67,7 @@ fn detect_single_char_xor() -> Result<()> {
     }
 
     print!(
-        "Encrypted string in inputs/s1c4.txt with freq rank {} = {}",
+        "Encrypted string in inputs/c4.txt with freq rank {} = {}",
         max_rank,
         output.unwrap()
     );
@@ -87,7 +87,7 @@ fn repeat_key_xor() {
 }
 
 fn break_repeat_key_xor() -> Result<()> {
-    let input = decode_b64_file("inputs/s1c6.txt")?;
+    let input = decode_b64_file("inputs/c6.txt")?;
     let guessed_key = input.guess_vigenere()?;
     let plainblob = input.repeat_key_xor(&guessed_key);
     println!("Vigenere Key: \'{}\'", String::from_utf8(guessed_key)?);
@@ -96,7 +96,7 @@ fn break_repeat_key_xor() -> Result<()> {
 }
 
 fn aes_decrypt() -> Result<()> {
-    let input = decode_b64_file("inputs/s1c7.txt")?;
+    let input = decode_b64_file("inputs/c7.txt")?;
     let key = b"YELLOW SUBMARINE";
     let output = AesEcb128::decrypt(key, None, input.as_slice())?;
     println!("Plain text: {}", String::from_utf8(output)?);
@@ -104,7 +104,7 @@ fn aes_decrypt() -> Result<()> {
 }
 
 fn detect_aes_ecb() -> Result<()> {
-    let input = "inputs/s1c8.txt";
+    let input = "inputs/c8.txt";
     println!("input file: {}", input);
     let input = File::open(input)?;
     for (i, line) in BufReader::new(input)
@@ -131,11 +131,7 @@ pub fn run(args: &CryptopalArgs) -> Result<()> {
         6 => break_repeat_key_xor()?,
         7 => aes_decrypt()?,
         8 => detect_aes_ecb()?,
-        _ => anyhow::bail!(
-            "Challenge {} doesn't exist in set {}",
-            args.challenge,
-            args.set
-        ),
+        _n => bail!("Challenge {n} doesn't exist in set 1"),
     };
 
     Ok(())
