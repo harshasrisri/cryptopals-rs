@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 use crate::CryptopalArgs;
-use anyhow::{Result, bail};
+use anyhow::{bail, Result};
 use cryptopals::aes::{AesCbc128, AesMode, Cipher, Oracle};
 use cryptopals::buffer::*;
 use cryptopals::decode_b64_file;
@@ -75,7 +75,7 @@ pub fn run(args: &CryptopalArgs) -> Result<()> {
         9 => pkcs7_padding()?,
         10 => decrypt_cbc()?,
         11 => ecb_cbc_oracle()?,
-        _n => bail!("Challenge {n} doesn't exist in set 2"),
+        n => bail!("Challenge {n} doesn't exist in set 2"),
     };
 
     Ok(())

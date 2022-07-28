@@ -1,4 +1,4 @@
-use anyhow::{Result, bail};
+use anyhow::{bail, Result};
 use std::path::PathBuf;
 use structopt::StructOpt;
 
@@ -20,9 +20,9 @@ fn main() -> Result<()> {
     let args = CryptopalArgs::from_args();
 
     match args.challenge {
-        n if n >= 1 && n <= 8 => set1::run(&args)?,
-        n if n >= 9 && n <= 16 => set2::run(&args)?,
-        _n => bail!("Challenge {n} doesn't exist"),
+        n if (1..=8).contains(&n) => set1::run(&args)?,
+        n if (9..=16).contains(&n) => set2::run(&args)?,
+        n => bail!("Challenge {n} doesn't exist"),
     };
 
     Ok(())

@@ -1,5 +1,5 @@
 use crate::CryptopalArgs;
-use anyhow::{Result, bail};
+use anyhow::{bail, Result};
 use cryptopals::aes::{AesEcb128, Cipher};
 use cryptopals::buffer::*;
 use cryptopals::decode_b64_file;
@@ -131,7 +131,7 @@ pub fn run(args: &CryptopalArgs) -> Result<()> {
         6 => break_repeat_key_xor()?,
         7 => aes_decrypt()?,
         8 => detect_aes_ecb()?,
-        _n => bail!("Challenge {n} doesn't exist in set 1"),
+        n => bail!("Challenge {n} doesn't exist in set 1"),
     };
 
     Ok(())
