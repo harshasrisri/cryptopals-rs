@@ -8,7 +8,6 @@ description = "Computer Security Challenges from www.cryptopals.com solved using
 [dependencies]
 base64 = "0.10.1"
 hex = "0.3.2"
-structopt = "0.3.7"
 openssl = "0.10.27"
 anyhow = "1.0"
 lazy_static = "1.4.0"

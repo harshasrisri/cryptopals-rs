@@ -1,19 +1,28 @@
 use anyhow::{bail, Result};
 use std::path::PathBuf;
-use structopt::StructOpt;
 
 mod set1;
 mod set2;
 
-#[derive(StructOpt, Debug)]
 pub struct CryptopalArgs {
-    /// Specify the challenge number. Default solves all of them.
-    #[structopt(short = "c", long = "challenge")]
     pub challenge: usize,
-
-    /// Input file for the challenge specified.
-    #[structopt(short = "i", long = "inputfile")]
     pub inputfile: Option<PathBuf>,
+}
+
+impl CryptopalArgs {
+    fn from_args() -> Self {
+        let mut args = std::env::args();
+        let command = args.next().expect("Couldn't get command");
+        let challenge = args.next().map(|n| n.parse().ok()).flatten();
+        let inputfile = args.next().map(PathBuf::from);
+
+        if let Some(challenge) = challenge {
+            CryptopalArgs { challenge, inputfile }
+        } else {
+            eprintln!("Usage: {command} <challenge_number> [inputfile]");
+            std::process::exit(1);
+        }
+    }
 }
 
 fn main() -> Result<()> {
